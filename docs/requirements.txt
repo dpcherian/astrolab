@@ -3,3 +3,7 @@ sphinx-rtd-theme
 sphinx-copybutton
 sphinx-math-dollar
 sphinx-tabs
+numpy
+matplotlib
+scipy
+astropy
