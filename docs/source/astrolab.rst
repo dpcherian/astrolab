@@ -1,4 +1,4 @@
-.. _astrolab
+.. _astrolab:
 
 The ``astrolab`` package
 ========================
