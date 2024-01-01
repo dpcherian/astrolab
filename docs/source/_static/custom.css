@@ -1,0 +1,49 @@
+/* Modification to make the width 100% of the screen */
+.wy-nav-content {
+    max-width: 100% !important;
+}
+
+/* Modification to make the `manni` theme import colour different */
+/* see _static/pygments.css for full list of possibilities */
+/*.highlight .nn { color: #1090B0; font-weight: bold } /* Name.Namespace */
+/*.highlight .nf { color: #7E1099 } /* Colour of "functions" (?) */
+
+
+/* Modification to change colour of sidebar background and font */
+{% extends "!layout.html" %}
+  {% block footer %} {{ super() }}
+
+  <style>
+    /* Sidebar header (and topbar for mobile) */
+    /* This was supposed to change the top, but ultimately
+       the top colour was changed by adding 'style_nav_header_background': '#392f75'
+       to conf.py */
+    .wy-side-nav-search, .wy-nav-top {
+      background: #000000 ;
+    }
+    /* Sidebar */
+    .wy-nav-side {
+      background: #ffeeaafc;
+    }
+
+    /* Change colour of captions for headers in TOC */
+    .wy-menu-vertical header, .wy-menu-vertical p.caption{
+      color: #aa4400ff;
+    }
+    /* Change colour of the text in table of contents */
+    .wy-menu-vertical a{
+      color: #000000;
+    }
+
+    /* Colour of hover over TOC */
+    .wy-menu-vertical a:hover {
+        background-color: #ffe680ff;
+    }
+    /* Need to figure out how to change background colors of different levels */
+    /* .wy-menu-vertical li{
+      background-color: #fff6d5ff;
+    } */
+
+
+  </style>
+{% endblock %}
