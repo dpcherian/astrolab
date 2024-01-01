@@ -1,7 +1,7 @@
-astrolab.optical module
+astrolab.imaging module
 =======================
 
-.. automodule:: astrolab.optical
+.. automodule:: astrolab.imaging
    :members:
    :undoc-members:
    :show-inheritance:

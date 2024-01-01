@@ -143,19 +143,19 @@ Windows
 Basic Usage
 ~~~~~~~~~~~
 
-Once you have successfully installed the above package, you should be able to call the modulesx and use the functions they provide in any of your Jupyter Notebooks. For example, you could say
+Once you have successfully installed the above package, you should be able to call the modules and use the functions they provide in any of your Jupyter Notebooks. For example, you could say
 
 .. code-block:: python
 
-	from astrolab import optical as olib
+	from astrolab import imaging as im
 	
 
-and you could then use the range of functions provided in the ``optical`` library of ``astrolab`` to perform basic image-reduction and analysis. These functions are described in more detail in :ref:`the section describing the modules <the-modules>`.
+and you could then use the range of functions provided in the ``imaging`` library of ``astrolab`` to perform basic image-reduction and analysis. These functions are described in more detail in :ref:`the section describing the modules <astrolab>`.
 
 Similarly, you could run
 
 .. code-block:: python
 
-	from astrolab import acoustic as alib
+	from astrolab import timing as time
 
-and use the range of functions of the ``acoustic`` ibrary of the ``astrolab`` package to analyse ``.wav`` files for the Doppler Effect experiment. This, too, has been detailed in :ref:`the section describing the modules <the-modules>`.
+and use the range of functions of the ``timing`` library of the ``astrolab`` package to analyse ``.wav`` files for the Doppler Effect experiment. This, too, has been detailed in :ref:`the section describing the modules <astrolab>`.

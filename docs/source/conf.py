@@ -35,7 +35,6 @@ extensions = [
     'sphinx_math_dollar',
     'sphinx.ext.mathjax',
     'sphinx.ext.todo',
-    'sphinx.ext.autosectionlabel',
     'sphinx_tabs.tabs',
     "sphinx.ext.autodoc", 
     'sphinx.ext.autosummary'

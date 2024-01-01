@@ -52,7 +52,7 @@ def load_signal(filename, clip=None, print_log=False, color='royalblue', fig=Non
 
     Usage
     -----
-    >>> sr, times, sig = load signal("./filename.wav", clip=[3,20], plot=True, color='firebrick', fig=None, ax=None)
+    >>> sr, times, sig = load_signal("./filename.wav", clip=[3,20], print_log=True, color='firebrick', fig=None, ax=None)
     """
     samplerate, signal = wavfile.read(filename)  # Read the data into variables
     

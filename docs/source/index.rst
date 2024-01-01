@@ -20,7 +20,7 @@ Contents
 .. toctree::
    :caption: The Package
 
-   modules
+   astrolab
 
 .. toctree::
    :caption: Tutorials
