@@ -6,6 +6,7 @@ _site/
 
 # IDE files
 .vscode
+.ipynb_checkpoints
 
 # Temporary python files
 __pycache__

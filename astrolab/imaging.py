@@ -15,6 +15,7 @@ import warnings
 from PIL import Image
 
 from matplotlib.patches import Rectangle
+import glob as glob
 
 
 def load_image(filename, gray_conv = [0.2126, 0.7152, 0.0722], print_log=False, cmap='Greys_r', stretch='log', log_a=1000):
@@ -41,7 +42,7 @@ def load_image(filename, gray_conv = [0.2126, 0.7152, 0.0722], print_log=False, 
         A string describing the type of stretching that can be applied to display image data. By default, a log stretch is applied. # TODO: Add more stretches
 
     log_a: float, default: 1000
-        The log index for ``stretch='log'``. # TODO: Implement log index stretching
+        The log index for ``stretch='log'``.
 
     Returns
     -------
@@ -78,7 +79,7 @@ def load_image(filename, gray_conv = [0.2126, 0.7152, 0.0722], print_log=False, 
     return data.astype(np.float32)
 
 
-def display(image_array, cmap='Greys_r', stretch='log', log_a = 1000, norm_array=None, xlim = None, ylim = None, fig=None, ax=None):
+def display(image_array, cmap='Greys_r', stretch='log', log_a = 1000, norm_array=None, min_percent=0.0, max_percent=100.0, title=None, xlim = None, ylim = None, fig=None, ax=None):
     """
     Display 2D scalar data as an image.
 
@@ -96,11 +97,17 @@ def display(image_array, cmap='Greys_r', stretch='log', log_a = 1000, norm_array
     log_a: float, default: 1000
         The log index for ``stretch='log'``.
 
-    xlim, ylim: float, default: None 
-        Set the ``x`` or ``y`` limits of the plot. First element is the lower limit, and the second is the upper limit.
-
     norm_array: array_like, default: None
         A 2D array used to decide the normalisation of the ``simple_norm`` (from ``astropy.visualization``) used to visualise the plot. By default, the ``image_array`` is used for this norm.
+
+    min_percent : float, default: 0.0
+        The percentile value used to determine the pixel value of minimum cut level. This is a parameter for the ``astropy.visualization.simple_norm`` used to display the image.
+
+    max_percent : float, default: 100.0
+        The percentile value used to determine the pixel value of maximum cut level.  This is a parameter for the ``astropy.visualization.simple_norm`` used to display the image.
+
+    xlim, ylim: float, default: None
+        Set the ``x`` or ``y`` limits of the plot. First element is the lower limit, and the second is the upper limit.
 
     fig: matplotlib figure object, default: None
         Figure on which to plot the result. By default, a new figure is created.
@@ -132,12 +139,33 @@ def display(image_array, cmap='Greys_r', stretch='log', log_a = 1000, norm_array
     if(norm_array is None):                 # If no explicit ``norm_array`` is provided, use
         norm_array = image_array            # the ``image_array`` to compute the display norm
         
-    img = ax.imshow(image_array, origin='lower', cmap = cmap, norm=simple_norm(norm_array, stretch=stretch, log_a = log_a))        # Display the image
+    img = ax.imshow(image_array, origin='lower', cmap = cmap, norm=simple_norm(norm_array, stretch=stretch, log_a=log_a, min_percent=min_percent, max_percent=max_percent))               # Display the image
 
     ax.set_xlim(xlim)                                     # Set the ``xlim`` of the plot
     ax.set_ylim(ylim)                                     # Set the ``ylim`` of the plot
 
+    if(title is not None):
+        ax.set_title(title)
+
     return img
+
+
+def get_files(pathname, root_dir=None, dir_fd=None, recursive=False, print_log=False):
+    """
+    Get all filenames that match a given pattern and return a sorted list.
+
+    This is a simple wrapper around the ``glob.glob`` function. From ``glob.glob``'s docstring: Return a list of paths matching a pathname pattern.
+
+    The pattern may contain simple shell-style wildcards a la fnmatch. However, unlike fnmatch, filenames starting with a dot are special cases that are not matched by '*' and '?' patterns.
+
+    If recursive is true, the pattern '**' will match any files and zero or more directories and subdirectories.
+    """
+    files = np.sort(glob.glob(pathname, root_dir=None, dir_fd=None, recursive=False))
+
+    if(print_log):
+        print("Files loaded:\n", files)
+
+    return files
 
 
 def stack_files(filelist, stack_type='mean', gray_conv = [0.2126, 0.7152, 0.0722], print_log=False):
@@ -309,6 +337,45 @@ def flip(image_array, axis="x"):
         raise ValueError("Can't flip around \""+axis+"\" axis." )
     
         
+def crop(image_array, left=None, right=None, top=None, bottom=None, origin=None, print_log=False):
+    """
+    Crop an image between pre-specified pixels, with the option of choosing an origin around which to perform the cropping.
+
+    Parameters
+    ----------
+    image_array: array_like
+        A 2D array which serves as the image data.
+
+    left, right, top, bottom: int
+        Left, right, top, and bottom pixel values to crop the image if ``origin=None``. If ``origin`` is provided, these are the pixels to the left, right, top, and bottom of the ``origin`` pixel within which the image is to be cropped.
+
+    origin: List [int, int] or None, default: None
+        Point about which to crop the image. By default, no point is provided, and ``left``, ``right``, ``top``, and ``bottom`` correspond to absolute pixel values.
+
+    print_log: bool, default: False
+        Provides option to print a log to debug your code. In this case, it will display the cropped array.
+
+    Returns
+    -------
+    cropped_array: array_like
+        A 2D array. The cropped array.
+
+    Usage
+    -----
+    >>> cropped_array = crop(this_data, left=0, right=1500)
+    >>> cropped_array = crop(this_data, left=100, right=100, top=100, bottom=100, origin=[1052,1002])
+    """
+    if(origin is None): # If no origin is given,
+        cropped_array = image_array[bottom:top, left:right] # crop image between endpoints
+    else: # If an origin is provided, use the pixels as distances from this origin
+        cropped_array = image_array[origin[1]-bottom:origin[1]+top, origin[0]-left: origin[0]+right]
+
+    if(print_log):
+        display(cropped_array)
+
+    return cropped_array
+
+
 def shift(image_array, displacement, print_log=False):
     """
     Translate an image by a ``displacement`` vector.
@@ -364,7 +431,7 @@ def rotate(image_array, angle, origin=None, expand=False, fill=False, print_log=
     angle: float
         Angle by which to rotate the image.
     
-    origin: List [float, float] or None, default: None
+    origin: List [int, int] or None, default: None
         Point about which to rotate the image. By default, no point is provided, and the image is rotated about its centre.
 
     expand: bool, default: False
