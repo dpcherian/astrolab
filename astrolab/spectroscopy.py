@@ -8,7 +8,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import warnings
-from PIL import Image
 
 import astrolab.imaging
 
@@ -126,7 +125,7 @@ def rotate_spectrum(image_array, angle=None, star=[None,None], threshold=0.1, ex
 
 def crop_spectrum(image_array, star = [None, None], offset = 100, width = 1500, height = 200, print_log=False, cmap='Greys_r'):
     """
-    Crop an image around a star, with ``offset`` space to the left, a total width of ``width`` and height ``height``. The star location can be found using the ``find_star`` function. If no star location is provided, it simply finds the brightest pixel.
+    Crop an image around a star, with ``offset`` pixels to the left, a total width of ``width`` and height ``height``. The star location can be found using the ``imaging.find_star`` function. If no star location is provided, it simply finds the brightest pixel.
 
     Parameters
     ----------
@@ -154,7 +153,7 @@ def crop_spectrum(image_array, star = [None, None], offset = 100, width = 1500, 
     Returns
     -------
     cropped_array: array_like
-        A 2D array. The flipped array.
+        A 2D array. The cropped array.
 
     Raises
     ------
@@ -185,7 +184,7 @@ def crop_spectrum(image_array, star = [None, None], offset = 100, width = 1500, 
         
     if(height > len(image_array)):
         warnings.warn("`height` cannot be greater than image height, resizing height to image height.", UserWarning)
-        width = len(image_array)
+        height = len(image_array)
         
     if(star[0]==None or star[1]==None): # If star is not provided, find the brightest pixel
         star = astrolab.imaging.find_star(image_array)
@@ -293,6 +292,8 @@ def get_spectrum(image_array, sub_bkg=False, lower_lim=None, upper_lim=None, n_s
     if(print_log):
         fig, ax = plt.subplots()
         ax.plot(spectrum, lw=1, color='firebrick', label='No background subtraction')
+        ax.set_xlabel("Pixel")
+        ax.set_ylabel("Intensity")
         if(sub_bkg):
             ax.plot(spectrum-bkg, lw=1, color='steelblue', label='Background subtracted')
         ax.legend()
@@ -487,6 +488,9 @@ def calibrate(spectrum, lineA, lineB=None, wvPerPix=None, print_log=False, lw=0.
 
         ax.set_xlim(xlim)
         ax.set_ylim(ylim)
+
+        ax.set_xlabel("Pixel")
+        ax.set_ylabel("Intensity")
 
     if(lineB!=None):               # If two-point calibration is done, return the `wvPerPix` as well
         return wavelengths, wvPerPix
