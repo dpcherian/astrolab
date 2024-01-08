@@ -85,7 +85,7 @@ def chunk_signal(times, signal, size=2048, step=128):
     Break up a signal (given in the ``signal`` array) into individual pieces
     (or chunks) of size ``size``, whose left-edges are separated by a ``step`` samples. 
     
-    Thus, if "chunk 0" ranges from (0, ``size``), "chunk 1" would range from (``step``, ``size + step``). Notice how both chunks are ``size`` samples wide, and their left edges are separated by ``step`` samples. The splitting is thus done with significant overlap. 
+    Thus, if "chunk 0" ranges from ``(0, size)``, "chunk 1" would range from ``(step, size + step)``. Notice how both chunks are ``size`` samples wide, and their left edges are separated by ``step`` samples. The splitting is thus done with significant overlap.
     
     For each of these chunks, it returns the average time at which the chunk was taken, and the signal's amplitude values within that chunk.
 
@@ -93,19 +93,19 @@ def chunk_signal(times, signal, size=2048, step=128):
     ----------
     times: array_like
         An array of times, usually one of the outputs of the ``load_signal`` function.
-    
+
     signal: array_like
         An array of amplitudes for each of the times in ``times``, also typically one of the outputs of the ``load_signal`` function. 
-        
+
     size: int, default: 2048
         The number of samples in a single chunk. 
-    
+
     step: int, default: 128 
         The number of samples between the left-edges of successive chunks. 
 
     Returns
     -------
-    avg_t: array_like
+    t: array_like
         A one-dimensional array containing the average time values for each of the chunks.
 
     chunks: array_like
@@ -113,7 +113,7 @@ def chunk_signal(times, signal, size=2048, step=128):
 
     Usage
     -----
-    >>> avg_t, chunks = chunk signal(times, sig)
+    >>> average_times, chunks = chunk signal(times, sig)
     """
     size = int(size); step = int(step)             # Cast size and step into integers, if necessary
 
@@ -138,8 +138,7 @@ def chunk_signal(times, signal, size=2048, step=128):
 
 def power_spectrum(chunk, samplerate, lowx=1000, highx=10_000, print_log=False, color='tomato', label=None, fig=None, ax=None):
     """
-    Accept an array of signal values, compute its power spectrum, and return the dominant
-    frequency in the range ``[lowx, highx]``. Ideally, this range should be centered around the expected "stationary" frequency, and should be wide enough contain all the variation in the frequency during the object's motion.
+    Accept an array of signal values, compute its power spectrum, and return the dominant frequency in the range ``[lowx, highx]``. Ideally, this range should be centered around the expected "stationary" frequency, and should be wide enough contain all the variation in the frequency during the object's motion.
 
     Parameters
     ----------
@@ -172,7 +171,8 @@ def power_spectrum(chunk, samplerate, lowx=1000, highx=10_000, print_log=False, 
 
     Returns
     -------
-    maxfreq: The frequency in the range ``[lowx , highx]`` that contributes the greatest deal to our signal in the given range of frequencies.
+    dom_freq: float
+        The frequency in the range ``[lowx , highx]`` that contributes the greatest deal to our signal in the given range of frequencies.
 
     Usage:
     ------

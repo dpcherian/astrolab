@@ -33,7 +33,7 @@ def load_image(filename, gray_conv = [0.2126, 0.7152, 0.0722], print_log=False, 
         R,G, and B weights to convert from RGB image to grayscale image. 
 
     print_log: bool, default: False
-        A boolean variable to decide whether you want to print a log of what you've done. In this case, whether you want display the image you have loaded.
+        Provides option to print a log to debug your code. In this case, whether you want display the image you have loaded.
 
     cmap: str, default: "Greys_r"
         A string containing the colormap title. Should be one of the colormaps used by matplotlib: https://matplotlib.org/stable/users/explain/colors/colormaps.html.
@@ -52,7 +52,7 @@ def load_image(filename, gray_conv = [0.2126, 0.7152, 0.0722], print_log=False, 
     Raises
     ------
     ValueError
-        If the filetype is not FIT, FITS, JPG, JPEG, or PNG
+        If the filetype is not FIT, FITS, JPG, JPEG, or PNG.
     
     Usage
     -----
@@ -150,7 +150,7 @@ def display(image_array, cmap='Greys_r', stretch='log', log_a = 1000, norm_array
     return img
 
 
-def get_files(pathname, root_dir=None, dir_fd=None, recursive=False, print_log=False):
+def get_files(pathname, root_dir=None, print_log=False):
     """
     Get all filenames that match a given pattern and return a sorted list.
 
@@ -159,8 +159,28 @@ def get_files(pathname, root_dir=None, dir_fd=None, recursive=False, print_log=F
     The pattern may contain simple shell-style wildcards a la fnmatch. However, unlike fnmatch, filenames starting with a dot are special cases that are not matched by '*' and '?' patterns.
 
     If recursive is true, the pattern '**' will match any files and zero or more directories and subdirectories.
+
+    Parameters
+    ----------
+    pathname: str
+        A string containing a path specification. Can be either absolute (like ``~/data/ring*L.txt``) or relative (like ``../../spectrum_sirius*.fit``), and can contain shell-style wildcards (* and ?). 
+
+    root_dir: str or None, default: None
+        Path specifying the root directory for searching.  If ``pathname`` is relative, the result will contain paths relative to ``root_dir``.
+
+    print_log: bool, default: False
+        Provides option to print a log to debug your code. In this case, it will print out the list of files loaded.
+
+    Returns
+    -------
+    files: array_like
+        A 1D array containing the paths of all the files that match a specific pattern.
+
+    Usage
+    -----
+    >>> filelist = get_files("./data/imaging/ring*L.fit")
     """
-    files = np.sort(glob.glob(pathname, root_dir=None, dir_fd=None, recursive=False))
+    files = np.sort(glob.glob(pathname, root_dir=root_dir))
 
     if(print_log):
         print("Files loaded:\n", files)
@@ -217,7 +237,7 @@ def stack(array_of_images, shifts = None, stack_type='mean', print_log=False):
     """
     Stack an array of multiple image arrays together to produce a single output array. Each image may be shifted by a pre-specified amount before stacking. Images shifts are taken from the ``shifts`` variable.
     
-    WARNING: Shifting an image may cause parts of the image array to be cut off.
+    **WARNING:** Shifting an image may cause parts of the image array to be cut off.
 
     Parameters
     ----------
@@ -225,7 +245,7 @@ def stack(array_of_images, shifts = None, stack_type='mean', print_log=False):
         A 3-dimensional ``(N, Ly, Lx)`` array containing ``N`` image arrays of size ``(Ly, Lx)`` to stack. 
 
     shifts: array_like or None, default: None
-        An (N, 2) array containing N 2D vectors representing the shifts by which each image should be displaced before summing. If ``None`` is provided, no shifting is done.
+        An ``(N, 2)`` array containing ``N`` 2D vectors representing the shifts by which each image should be displaced before summing. If ``None`` is provided, no shifting is done.
 
     stack_type: {"mean", "average", "sum"}, default: "mean"
         A string describing the type of stacking. "average" and "mean" both perform the same action.
