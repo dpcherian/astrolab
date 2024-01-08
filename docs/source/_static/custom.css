@@ -47,3 +47,24 @@
 
   </style>
 {% endblock %}
+
+
+/* CODE TO CHANGE AUTODOC FUNCTION TITLES */
+
+/* Change color of function title, background, and parameter font-color */
+html.writer-html5 .rst-content dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.citation):not(.glossary):not(.simple) > dt {
+    background-color: #ffeeab80;
+    border-color: #782121;
+    color: #782121e0;
+}
+
+html.writer-html5 .rst-content dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.citation):not(.glossary):not(.simple) .descname, html.writer-html5 .rst-content dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.citation):not(.glossary):not(.simple) .sig-name {
+    /* Use this to change colour of the function name. */
+}
+
+/* Change color of "[source]" */
+.rst-content .viewcode-link {
+    color: #73680c;
+}
+
+/*********************************************/

@@ -116,3 +116,7 @@ autodoc_member_order = 'bysource'
 
 # Ask nbsphinx to never execute notebooks before rendering them on the website (since data will not be stored on the git repo).
 nbsphinx_execute = 'never'
+
+# If true, the current module name will be prepended to all description
+# unit titles (such as .. function::).
+add_module_names = True
