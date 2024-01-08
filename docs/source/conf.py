@@ -34,11 +34,13 @@ extensions = [
     'sphinx_copybutton',
     'sphinx_math_dollar',
     'sphinx.ext.mathjax',
-    'sphinx.ext.todo',
-    'sphinx_tabs.tabs',
-    "sphinx.ext.autodoc", 
-    'sphinx.ext.autosummary'
+    'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.viewcode',
+    'nbsphinx'
 ]
+
+# NOTE: 'sphinx_tabs.tabs' conflicts with 'nbsphinx', causing notebook cells to not being rendered correctly.
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -111,3 +113,6 @@ sphinx_tabs_disable_tab_closing = True
 
 # Sort functions by the order they appear in the source (for autodoc)
 autodoc_member_order = 'bysource'
+
+# Ask nbsphinx to never execute notebooks before rendering them on the website (since data will not be stored on the git repo).
+nbsphinx_execute = 'never'

@@ -310,7 +310,7 @@ def plot_ref(wvs = [6562.79, 4861.35, 4340.472, 4101.734], wvnames=[r"$\alpha$",
     wvs: array_like, default: [6562.79, 4861.35, 4340.472, 4101.734] (Balmer series)
         A list of wavelengths.
 
-    wvnames: array_like, default: [r"$\alpha$",r"$\beta$",r"$\gamma$", r"$\delta$"] (Balmer series)
+    wvnames: array_like, default: [r"$\\alpha$",r"$\\beta$",r"$\\gamma$", r"$\\delta$"] (Balmer series)
         A list of wavelength names.
 
     color: str, default: 'darkgoldenrod'

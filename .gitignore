@@ -13,3 +13,6 @@ __pycache__
 
 #DS_Store files
 *.DS_Store
+
+# Data files not to be tracked on git
+**/tutorials/data/
