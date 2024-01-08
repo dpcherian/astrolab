@@ -70,9 +70,9 @@ def find_angle(image_array, threshold=0.1, star=[None, None], search=500, print_
     return angle
 
 
-def rotate_spectrum(image_array, angle=None, star=[None,None], threshold=0.1, expand=False, fill=False, print_log=False):
+def rotate_spectrum(image_array, angle=None, origin=None, threshold=0.1, expand=False, fill=False, print_log=False):
     """
-    Rotate an image around a star. If no ``angle`` is provided, the angle is computed using ``find_angle``. The star location can be found as the output of the ``imaging.find_star`` function. If no star location is provided, it simply finds the brightest pixel.
+    Rotate an image by an angle around an origin. If no origin is provided, it rotates about the centre of the image. If no angle is provided, the angle is computed using ``imaging.find_angle``. The origin could be the location of a star, found as the output of the ``imaging.find_star`` function.
 
     Parameters
     ----------
@@ -82,14 +82,14 @@ def rotate_spectrum(image_array, angle=None, star=[None,None], threshold=0.1, ex
     angle: float or None, default: None
         Angle by which to rotate the image.
 
-    star: [int, int] or [None, None], default: [None, None]
+    origin: [int, int] or None, default: None
         ``x`` and ``y`` pixel coordinates of the star's exact location.
     
     threshold: float < 1, default: 0.1
         Threshold value (as a fraction of the maximum value in the image) below which all data-points are ignored.
 
     expand: bool, default: False
-        Expands the output image to make it large enough to hold the entire rotated image.
+        Expands the output image to make it large enough to hold the entire rotated image. Note that this flag assumes rotation about the centre, and no translation.
 
     fill: bool, default: False
         Fill area outside the rotated image. If ``True``, this area is filled with the median value of the image.
@@ -102,28 +102,30 @@ def rotate_spectrum(image_array, angle=None, star=[None,None], threshold=0.1, ex
     rotated_array: array_like
         A 2D array. The rotated array.
 
+    Warns
+    -----
+    UserWarning
+        If ``expand=True`` and ``origin`` is provided.
+
     Usage
     -----
     >>> rotated_array = rotate_spectrum(this_data, angle=23.0, star=[1052,1002])
     >>> rotated_array = rotate_spectrum(this_data, star=[1052,1002], threshold=0.22)
-    
     """
-
-    if(star[0] is None or star[1] is None):    # If no star is provided,
-        star = astrolab.imaging.find_star(image_array, print_log=print_log) # find one
+    if(origin is None):    # If no origin is provided,
+        origin = [len(image_array[0])//2, len(image_array)//2] # use the closest point to the centre of the image
+    elif(expand == True):  # If the ``expand`` flag is set, and the origin isn't the centre of the image, the behaviour might not be as expected
+        warnings.warn("``expand=True`` assumes rotation about the centre of the image, and no translation. If you have provided any other point, the image might get truncated.", UserWarning)
 
     if(angle is None): # If no angle is provided,
         angle = find_angle(image_array, threshold=threshold, print_log=print_log) # find one
 
-    rotated_array = astrolab.imaging.rotate(image_array=image_array, angle=angle, origin=star, expand=expand, fill=fill, print_log=print_log) # Rotate using the ``imaging.rotate`` function, using the star as the origin.
-
-    if(print_log):
-        astrolab.imaging.display(rotated_array, norm_array=image_array)
+    rotated_array = astrolab.imaging.rotate(image_array=image_array, angle=angle, origin=origin, expand=expand, fill=fill, print_log=print_log) # Rotate using the ``imaging.rotate`` function, using ``origin`` as the origin.
     
     return rotated_array
 
 
-def crop_spectrum(image_array, star = [None, None], offset = 100, width = 1500, height = 200, print_log=False, cmap='Greys_r'):
+def crop_spectrum(image_array, origin=None, offset=100, width=1500, height=200, print_log=False, cmap='Greys_r'):
     """
     Crop an image around a star, with ``offset`` pixels to the left, a total width of ``width`` and height ``height``. The star location can be found using the ``imaging.find_star`` function. If no star location is provided, it simply finds the brightest pixel.
 
@@ -132,22 +134,22 @@ def crop_spectrum(image_array, star = [None, None], offset = 100, width = 1500, 
     image_array: array_like
         A 2D array which serves as the image data.
         
-    star: [int, int] or [None, None], default: [None, None] 
-        ``x`` and ``y`` pixel coordinates of the star's exact location.
+    origin: [int, int] or None, default: None
+        ``x`` and ``y`` pixel coordinates of the origin. The cropped image starts from ``offset`` pixels to the left of this point, with a total width of ``width``, and a total height of ``height`` about this point. By default, the centre of the image is chosen.
     
-    offset: int, default: 100 
+    offset: int, default: 100
         Space to the left of star in cropped image.
 
-    width: int, default: 1500 
+    width: int, default: 1500
         Width of the cropped image.
 
-    height: int, default: 200. 
+    height: int, default: 200
         Height of the cropped image.
 
     print_log: bool, default: False
         Provides option to print a log to debug your code. In this case, it displays the cropped array.
 
-    cmap: str, default: "Greys_r" 
+    cmap: str, default: "Greys_r"
         A string containing the colormap title if ``print_log=True`` and a plot is produced. Should be one of the colormaps used by matplotlib: https://matplotlib.org/stable/users/explain/colors/colormaps.html.
     
     Returns
@@ -173,7 +175,7 @@ def crop_spectrum(image_array, star = [None, None], offset = 100, width = 1500, 
 
     Usage
     -----
-    >>> cropped_array = crop_spectrum(this_data, star=[1052,1002], offset=100, width=2500, height=400)
+    >>> cropped_array = crop_spectrum(this_data, origin=[1052,1002], offset=100, width=2500, height=400)
     """
     if( offset > len(image_array)/2 or offset > len(image_array[0])/2 ):
         raise ValueError("Offset value " + str(offset) + " cannot be larger than half either image dimension " + str(np.shape(image_array)) + ".")
@@ -186,22 +188,22 @@ def crop_spectrum(image_array, star = [None, None], offset = 100, width = 1500, 
         warnings.warn("`height` cannot be greater than image height, resizing height to image height.", UserWarning)
         height = len(image_array)
         
-    if(star[0]==None or star[1]==None): # If star is not provided, find the brightest pixel
-        star = astrolab.imaging.find_star(image_array)
+    if(origin is None): # If no origin is provided,
+        origin = [len(image_array[0])//2, len(image_array)//2] # use the closest point to the centre of the image
     
     offsets = np.array([offset, height//2])
     x,y = 0, 1
 
     for d in x,y: # Check to see if there is enough space between the star and the left/bottom of the image
         dir = "left" if d==0 else "bottom"
-        if(star[d] - offsets[d] < 0):
-            offsets[d] = star[d]
+        if(origin[d] - offsets[d] < 0):
+            offsets[d] = origin[d]
             warnings.warn("Not enough space to the "+dir+"; offset changed to "+ str(offsets[d])+".", UserWarning)
 
         # TODO: What if the star is too close the right/top of the image?
     
-    crop_x_range = [star[x] - offsets[x], star[x] - offsets[x] + width ] # x range (in pixels) to crop
-    crop_y_range = [star[y] - offsets[y], star[y] - offsets[y] + height] # y range (in pixels) to crop
+    crop_x_range = [origin[x] - offsets[x], origin[x] - offsets[x] + width ] # x range (in pixels) to crop
+    crop_y_range = [origin[y] - offsets[y], origin[y] - offsets[y] + height] # y range (in pixels) to crop
     
     cropped_array = image_array[crop_y_range[0] : crop_y_range[1], crop_x_range[0] : crop_x_range[1]]
 
