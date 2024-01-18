@@ -21,7 +21,7 @@ copyright = '2023, Philip Cherian'
 author = 'Philip Cherian'
 
 # The full version, including alpha/beta/rc tags
-release = '0.1'
+release = '2023.0.0'
 
 
 # -- General configuration ---------------------------------------------------

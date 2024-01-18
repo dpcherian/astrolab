@@ -1,0 +1,45 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "astrolab"
+version = "2023.0.0"
+dependencies = [
+  "numpy",
+  "matplotlib",
+  "scipy",
+  "astropy",
+  "pandas",
+]
+requires-python = ">=3.10"
+authors = [
+  {name = "Philip Cherian", email = "dpcherian@gmail.com"},
+]
+maintainers = [
+  {name = "Philip Cherian", email = "dpcherian@gmail.com"}
+]
+description = "Package developed to perform simple tasks in amateur observational astronomy, including timing, image reduction, spectroscopy, and photometry. Intended for use in Ashoka University's introductory astronomy laboratory, 'Observing the Cosmos' (PHY/AST1080)."
+readme = "README.md"
+license = {file = "LICENSE"}
+keywords = ["amateur", "astronomy", "ashoka university", "phy1080", "ast1080", "phy/ast1080", "imaging", "timing", "spectroscopy", "photometry", "undergraduate"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python"
+]
+
+[project.optional-dependencies]
+
+
+[project.urls]
+Homepage = "https://astrolab.readthedocs.io"
+Documentation = "https://astrolab.readthedocs.io"
+Repository = "https://github.com/dpcherian/astrolab.git"
+"Bug Tracker" = "https://github.com/dpcherian/astrolab/issues"
+
+[project.scripts]
+
+
+[project.gui-scripts]
+
+
