@@ -14,7 +14,7 @@ The following commands will make a local copy of this repository, and install th
 
 > ⚠️ This documentation contains Jupyter Notebooks which are rendered using a Sphinx plugin called ``nbsphinx``. This plugin can also re-run all Jupyter Notebooks to make sure they render correctly on the site. However, this means that all the packages that these tutorials use (``ipython``, ``numpy``, ``matplotlib``, ``scipy``, ``astropy``, and possibly others) must also be installed as requirements. **These installations might conflict with your previously installed packages.** Therefore, it is strongly advised that you use a python virtual environment. If you already have a virtual environment for the ``astrolab`` package, you could just use that. If not, you should create a new one. If you use `conda`, you can read up on how to create a virtual environment [here](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#). 
 
-- Clone the repository: `git clone git@github.com:dpcherian/astrolab.git`
+- Clone the repository: `git clone https://github.com/dpcherian/astrolab.git`
 - Move into the repository: `cd astrolab/docs`
 - Install requirements: `pip install -r requirements.txt` or `conda install --file requirements.txt`
 

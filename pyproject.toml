@@ -22,10 +22,12 @@ maintainers = [
 description = "Package developed to perform simple tasks in amateur observational astronomy, including timing, image reduction, spectroscopy, and photometry. Intended for use in Ashoka University's introductory astronomy laboratory, 'Observing the Cosmos' (PHY/AST1080)."
 readme = "README.md"
 license = {file = "LICENSE"}
-keywords = ["amateur", "astronomy", "ashoka university", "phy1080", "ast1080", "phy/ast1080", "imaging", "timing", "spectroscopy", "photometry", "undergraduate"]
+keywords = ["amateur", "astronomy", "ashoka university", "phy1080", "ast1080", "phy/ast1080", "imaging", "timing", "spectroscopy", "photometry", "undergraduate", "physics", "laboratory"]
 classifiers = [
   "Development Status :: 4 - Beta",
-  "Programming Language :: Python"
+  "Programming Language :: Python",
+  'Programming Language :: Python :: 3',
+  'Programming Language :: Python :: 3.10'
 ]
 
 [project.optional-dependencies]

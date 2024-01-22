@@ -11,6 +11,19 @@ The package contains two folders:
 - **[docs](./docs)** which contains the source code for the documentation written in Sphinx and hosted [here](https://astrolab.readthedocs.io).
 
 
+## Installing ``astrolab``
+
+> ⚠️ It is strongly recommended that you create a new ``conda`` environment for this package, to avoid conflicts with pre-existing Python packages in your system.
+
+- Create a new ``conda`` environment: ``conda create -n ast1080 python=3.10``
+- Activate this environment: ``conda activate ast1080``
+- Install ``astrolab`` from this repository: ``pip install git+https://github.com/dpcherian/astrolab.git``
+
+Once this is done, you can open Python and ``import`` the different modules in the ``astropy`` package.
+
+Additionally, you can install Jupyter Notebook, which provides a convenient environment to work in. This can be done by running the ``conda install jupyter`` command.
+
+
 ## Contributing to ``astrolab``
 
 #### **Do you have questions about this package?**

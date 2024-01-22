@@ -1,18 +1,21 @@
 Introduction
 ============
 
+In this section, we will cover setting up Python on your machine (using the "Miniconda" Python distribution), creating a virtual environment for this course, and installing the ``astrolab`` package in that environment. Follow these instructions carefully.
+
+.. note:: If you find any errors with this part of the documentation, please contact the maintainers of this package as soon as possible.
 
 
 Setting up Python
 =================
 
-.. caution:: This is still a work in progress, and the installation instructions have not been tested over a range of operating systems, and therefore it is conceivable that it cause errors with your python installation. As always, it is **strongly advised** that you use a conda environment for this lab and for this package. That way, if anything goes wrong, your python installation's integrity is not compromised.
+.. caution:: This is still a work in progress, and the installation instructions have not been tested over a range of operating systems, and therefore it is conceivable that it cause errors with your Python installation. As always, it is **strongly advised** that you use a conda environment for this lab and for this package. That way, if anything goes wrong, your Python installation's integrity is not compromised.
 
 
 Getting and installing ``conda`` on your machine
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Those of you who have already used Python before might be familiar with the `Anaconda Python distribution <https://en.wikipedia.org/wiki/Anaconda_(Python_distribution)>`_. Anaconda comes with its own "package manager", ``conda``, which automates the process of installing, upgrading, configuring, and removing Python packages. This is particularly useful if a package you need has multiple dependencies, or if you require multiple python versions for different purposes on the same computer.
+Those of you who have already used Python before might be familiar with the `Anaconda Python distribution <https://en.wikipedia.org/wiki/Anaconda_(Python_distribution)>`_. Anaconda comes with its own "package manager", ``conda``, which automates the process of installing, upgrading, configuring, and removing Python packages. This is particularly useful if a package you need has multiple dependencies, or if you require multiple Python versions for different purposes on the same computer.
 
 Anaconda is very useful, but is terrible bloated. It comes with a huge number of packages, most of which you will never use, either in this lab or elsewhere. Consequently, it sometimes slows down your computer. To avoid this, it is strongly recommended that you use **miniconda**. Miniconda is a minimal installer for the ``conda`` package manager, which comes with a couple of basic packages. The advantage of this is that you can only install what you need, keeping your Python installation lean and robust. The downside is that you need to install what you need at least once.
 
@@ -49,11 +52,11 @@ The above command installs
 
 - Matplotlib: The definitive plotting library for Python and NumPy. It is terribly versatile, and can -- and should! -- be used to create a variety of different kinds of plots.
 
-- SciPy: A useful Python package that contains a large number of modules for mathematical operations common in science and engineering (for example, optimization, linear algebra, integration, interpolation, special functions, fourier transforms, signal and image processing, solving ordinary differential equations, and so on). While we will not need this in this lab, it is a good idea to have it on your machine anyway.
+- SciPy: A useful Python package that contains a large number of modules for mathematical operations common in science and engineering (for example, optimization, linear algebra, integration, interpolation, special functions, fourier transforms, signal and image processing, solving ordinary differential equations, and so on).
 
-- Pandas: Just as with SciPy, while it is not strictly needed for this lab, Pandas is a very useful Python package to deal with large amounts of data.
+- Pandas: Another very useful Python package to deal with large amounts of data. We will not be using it extensively in this lab, but it will be helpful when we work with large datasets that can contain data of different datatypes (like our star catalogs).
 
-- Mamba: Mamba is a replacement for the already described ``conda`` command. In everything that follows from here on, you can use ``mamba`` in the place of ``conda``. The reason for using it is that it is tremendously faster than ``conda`` in many cases. However, **be warned**, ``mamba`` must `only` be installed in the ``base`` environment. It can then be used from every other environment.
+- Mamba: Mamba is a replacement for the already described ``conda`` command. In everything that follows from here on, you can use ``mamba`` in the place of ``conda``. The reason for using it is that it is tremendously faster than ``conda`` in many cases. However, **be warned**, ``mamba`` must `only` be installed in the ``base`` environment. Installing it in other environments is `not supported <https://mamba.readthedocs.io/en/latest/user_guide/troubleshooting.html>`_. However, once installed, it can then be used from every other environment.
 
 
 Setting up a ``conda`` environment
@@ -65,16 +68,16 @@ You can create a new environment using the ``conda create`` (or ``mamba create``
 
 .. code-block:: bash
 
-	conda create --name ast1080
+	conda create --name ast1080 python=3.10
 	
-This command tells ``conda`` to create a new environment with the name ``ast1080``. 
+This command tells ``conda`` to create a new environment with the name ``ast1080``, and with Python 3.10 installed in it.
 
 .. note:: 
 	As with most ``bash`` commands, you don't always have to use the full form ``--name``, but can instead use the short-hand ``-n`` which would have the same effect. In other words, the command below has exactly the same effect as the one above: 
 	
 	.. code-block:: bash
 	
-		conda create -n ast1080
+		conda create -n ast1080 python=3.10
 
 You can now get a list of the environments you have on your system by running 
 
@@ -105,6 +108,8 @@ Now, install the important packages for this laboratory. You could install the s
 
 	conda install jupyter numpy matplotlib scipy pandas astropy
 
+.. note:: You will notice that while we have installed most of the same packages as you did in the ``base`` environment, we have not installed ``mamba``. This is because, as we mentioned before, installing the ``mamba`` package on any environment other than the ``base`` environment is `not supported <https://mamba.readthedocs.io/en/latest/user_guide/troubleshooting.html>`_.
+
 Congratulations! You now have a working ``conda`` environment on your machine!
 
 
@@ -115,29 +120,26 @@ Setting up ``astrolab``
 Installation
 ~~~~~~~~~~~~
 
-The Python packages written for this lab can be installed as follows:
+The Python package written for this lab can be installed as follows:
 
-.. warning:: The following sections are incomplete!
+.. warning:: It is strongly recommended that you use a new ``conda`` environment unless you know what you're doing.
 
-MacOS
------
+- Create a new ``conda`` environment as described above: ``conda create -n ast1080 python=3.10``
+- Activate this environment: ``conda activate ast1080``
+- Install ``astrolab``: ``pip install git+https://github.com/dpcherian/astrolab``
 
+Installing the ``astrolab`` package will automatically install all the packages it depends on (its "dependencies"). If you have followed the instructions in the section above, all of them should already be installed. Additionally, you should install Jupyter Notebook in the environment if you plan on using it to run your Python codes. As before, this can be done using 
 
+.. code-block:: bash
 
+	conda install jupyter
 
-Linux
------
+Once this is done, you could run the following Python code (either in the terminal or in a new Jupyter Notebook) which will test if the ``astrolab`` package has been installed, and print the currently installed version:
 
+.. code-block:: python
 
-
-
-
-Windows
--------
-
-
-
-
+	import astrolab
+	print(astrolab.__version__)
 
 
 Basic Usage
@@ -152,7 +154,7 @@ Once you have successfully installed the above package, you should be able to ca
 
 and you could then use the range of functions provided in the ``imaging`` library of ``astrolab`` to perform basic image-reduction and analysis. These functions are described in more detail in :ref:`the section describing the modules <astrolab>`.
 
-Similarly, you could run
+Similarly, you could run:
 
 .. code-block:: python
 
