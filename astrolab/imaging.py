@@ -6,7 +6,6 @@ This package contains a list of functions that can be used to load and reduce im
 
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 
 from astropy.io import fits
 from astropy.visualization import simple_norm
@@ -388,6 +387,12 @@ def crop(image_array, left=None, right=None, top=None, bottom=None, origin=None,
     if(origin is None): # If no origin is given,
         cropped_array = image_array[bottom:top, left:right] # crop image between endpoints
     else: # If an origin is provided, use the pixels as distances from this origin
+        # If any of the offsets are None, reset them to the image edges
+        bottom = origin[1] if bottom is None else bottom
+        top    = len(image_array) - origin[1] if top is None else top
+        left   = origin[0] if left is None else left
+        right  = len(image_array[0]) - origin[0] if right is None else right
+
         cropped_array = image_array[origin[1]-bottom:origin[1]+top, origin[0]-left: origin[0]+right]
 
     if(print_log):
