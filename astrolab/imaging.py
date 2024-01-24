@@ -356,7 +356,7 @@ def flip(image_array, axis="x"):
         raise ValueError("Can't flip around \""+axis+"\" axis." )
     
         
-def crop(image_array, left=None, right=None, top=None, bottom=None, origin=None, print_log=False):
+def crop(image_array, left=None, right=None, top=None, bottom=None, origin=None, print_log=False, fig=None, ax=None):
     """
     Crop an image between pre-specified pixels, with the option of choosing an origin around which to perform the cropping.
 
@@ -373,6 +373,12 @@ def crop(image_array, left=None, right=None, top=None, bottom=None, origin=None,
 
     print_log: bool, default: False
         Provides option to print a log to debug your code. In this case, it will display the cropped array.
+
+    fig: matplotlib figure object, default: None
+        Figure on which to plot the result. By default, a new figure is created.
+
+    ax: matplotlib axes object, default: None
+        Axes on which to plot the result. By default, a new axis is created.
 
     Returns
     -------
@@ -396,7 +402,7 @@ def crop(image_array, left=None, right=None, top=None, bottom=None, origin=None,
         cropped_array = image_array[origin[1]-bottom:origin[1]+top, origin[0]-left: origin[0]+right]
 
     if(print_log):
-        display(cropped_array)
+        display(cropped_array, fig=fig, ax=ax)
 
     return cropped_array
 
@@ -490,7 +496,7 @@ def rotate(image_array, angle, origin=None, expand=False, fill=False, print_log=
     return rotated_array
 
 
-def find_star(image_array, star_pos=[None, None], search=500, print_log=False):
+def find_star(image_array, star_pos=[None, None], search=500, print_log=False, fig=None, ax=None):
     """
     Find the pixel location of star in a 2D image array. A "star" is defined simply as the "brightest" pixel in the array. 
     
@@ -509,6 +515,12 @@ def find_star(image_array, star_pos=[None, None], search=500, print_log=False):
 
     print_log: bool, default: False
         Provides option to print a log to debug your code. In this case, it will show the location of the detected star, and the provided search-box.
+
+    fig: matplotlib figure object, default: None
+        Figure on which to plot the result. By default, a new figure is created.
+
+    ax: matplotlib axes object, default: None
+        Axes on which to plot the result. By default, a new axis is created.
 
     Returns
     -------
@@ -535,7 +547,9 @@ def find_star(image_array, star_pos=[None, None], search=500, print_log=False):
     star = [star_x[0] + star_pos[0] - search//2, star_y[0] + star_pos[1] - search//2] if is_trimmed else [star_x[0], star_y[0]]
     
     if(print_log):
-        fig, ax = plt.subplots()
+        if(fig is None or ax is None):
+            fig, ax = plt.subplots()
+
         display(image_array, fig=fig, ax=ax, cmap='Greys_r')
         
         ax.scatter(star[0], star[1], color='none', edgecolor='r', s=20) # Plot trial location with an ``x``
