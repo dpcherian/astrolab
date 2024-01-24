@@ -9,4 +9,5 @@ numpy
 matplotlib
 scipy
 astropy
+pandas
 importlib
