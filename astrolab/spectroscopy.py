@@ -12,7 +12,7 @@ import warnings
 import astrolab.imaging
 
 
-def find_angle(image_array, threshold=0.1, star=[None, None], search=500, print_log=False, fig=None, ax=None):
+def find_angle(image_array, threshold=0.1, star=None, search=500, print_log=False, fig=None, ax=None):
     """
     Find angle by which to rotate an image with a spectrum so that the spectrum is horizontal.
 
@@ -28,7 +28,7 @@ def find_angle(image_array, threshold=0.1, star=[None, None], search=500, print_
     threshold: float < 1, default: 0.1
         Threshold value (as a fraction of the maximum value in the image) below which all data-points are ignored.
 
-    star: [int, int] or [None, None], default: [None, None]
+    star: [int, int] or None, default: None
         `x` and `y` pixel coordinates of the star's rough location to refine search for the brightest pixel. # TODO: Incorporate this. If None is provided, the brightest pixel is used.
 
     search: float, default: 500
@@ -385,11 +385,10 @@ def plot_fraunhofer(wvs = [7589.0, 6865.0, 6555.0, 5895.0, 5273.0, 5185.0, 4876.
     -----
     >>> plot_fraunhofer(this_spectrum, fig=fig, ax=ax)
     """
-
     plot_ref(wvs=wvs, wvnames=wvnames, color=color, fig=fig, ax=ax, lw=lw, text_rotation=text_rotation)
     
 
-def calibrate(spectrum, lineA, lineB=None, wvPerPix=None, print_log=False, lw=0.5, xlim=[None,None], ylim=[None,None], fig=None, ax=None):
+def calibrate(spectrum, lineA, lineB=None, wvPerPix=None, print_log=False, lw=0.5, xlim=None, ylim=None, fig=None, ax=None):
     """
     Calibrate a spectrum using either one-point or two-point calibration, assuming the relation between wavelength and pixel is linear. 
     
@@ -417,8 +416,8 @@ def calibrate(spectrum, lineA, lineB=None, wvPerPix=None, print_log=False, lw=0.
     lw: float, default 0.5
         Linewidth for the vertical calibration lines.
 
-    xlim, ylim: [float, float] or [None, None], default: [None, None]
-        Set the ``x`` or ``y`` limits of the plot. First element is the lower limit, and the second is the upper limit.
+    xlim, ylim: [float, float] or None, default: None
+        Set the ``x`` or ``y`` limits of the plot. First element is the lower limit, and the second is the upper limit. If ``None`` is proved, default plot limits are used.
 
     fig: matplotlib figure object, default: None
         Figure on which to plot the result. By default, a new figure is created.

@@ -496,7 +496,7 @@ def rotate(image_array, angle, origin=None, expand=False, fill=False, print_log=
     return rotated_array
 
 
-def find_star(image_array, star_pos=[None, None], search=500, print_log=False, fig=None, ax=None):
+def find_star(image_array, star_pos=None, search=500, print_log=False, fig=None, ax=None):
     """
     Find the pixel location of star in a 2D image array. A "star" is defined simply as the "brightest" pixel in the array. 
     
@@ -507,8 +507,8 @@ def find_star(image_array, star_pos=[None, None], search=500, print_log=False, f
     image_array: array_like
         A 2D array which serves as the image data.
 
-    star_pos: [int, int] or [None, None], default: [None, None]
-        ``x`` and ``y`` pixel coordinates of the star's rough location, to refine search for the brightest pixel. If None is provided, the brightest pixel is used.
+    star_pos: [int, int] or None, default: None
+        ``x`` and ``y`` pixel coordinates of the star's rough location, to refine search for the brightest pixel. If ``None`` is provided, the brightest pixel is used.
 
     search: float, default: 500
         Search "radius" in pixels. The brightest pixel will be found in the range (star_pos[0] +/- search, star_pos[1]+/- search).
@@ -531,7 +531,7 @@ def find_star(image_array, star_pos=[None, None], search=500, print_log=False, f
     -----
     >>> this_star = find_star(this_data, star_pos=[1000,1500], search=500)
     """
-    if(star_pos[0] is not None and star_pos[1] is not None):  # If both ``x`` and ``y`` coordinates are provided
+    if(star_pos is not None): # If both ``x`` and ``y`` coordinates are provided
         # Create a trimmed array from (star_pos[0] +/- search, star_pos[1]+/- search).
         # Note: arrays are indexed first by their "y" coordinate, and then the "x" coordinate.
         trimmed_array = image_array[ star_pos[1] - search//2 : star_pos[1] + search//2, 

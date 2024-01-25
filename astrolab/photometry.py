@@ -209,8 +209,8 @@ def get_bkg_counts_pp(image_array, aperture_coord=None, aperture_rad = 10, n_ape
         radii = np.array(aperture_rad)
 
     radii = radii.astype(int)       # Convert radii to an arry of integers
-    if(np.any(radii<=0)):           # Check if any of the radii are negative
-            raise ValueError("Aperture radius must be at least one pixel, but got the following unacceptable values: "+ str(np.unique(radii[radii<=0]))+ " pixels.")
+    if(np.any(radii<1)):            # Check if any of the radii are negative
+            raise ValueError("Aperture radius must be at least one pixel, but got the following unacceptable values: "+ str(np.unique(radii[radii<1]))+ " pixels.")
 
     Ly, Lx = np.shape(image_array)   # Get image array dimensions
     maxr = np.max(radii)             # Find largest radius in provided array:
@@ -434,7 +434,7 @@ def get_color_temperature_fits(catalog=None, deg=10, T_colname='Teff(K)', colors
         Optional flag to return the array of errors about each point. .. note:: Currently, these are constant values for each of the points corresponding to the standard deviation away from the fit, but point-wise errors could be added later.
 
     unpack: bool, default: False
-        If True, the returned array is transposed, so that arguments may be unpacked using ``T, fitBmR, fitGmR, fitBmG = get_color_temperature_fits()``. By default, this is ``True``.
+        If ``True``, the returned array is transposed, so that arguments may be unpacked using ``T, fitBmR, fitGmR, fitBmG = get_color_temperature_fits()``. By default, this is ``True``.
 
     precision: float, default: 0.01
         Minimum precision in the fitted temperature array. For example, is the temperature precise up to 12_000.0 K, or 12_000.01 K, or 12_000.001 K?
@@ -457,7 +457,7 @@ def get_color_temperature_fits(catalog=None, deg=10, T_colname='Teff(K)', colors
     fit_alpha: 0 < float < 1, default: 0.33
         Alpha of the fit lines.
 
-    fill_alpha: 0 < float < 1, default: 0.33
+    fill_alpha: 0 < float < 1, default: 0.1
         Alpha of the standard-deviation fill around the fit lines.
 
     fig: matplotlib figure object, default: None
@@ -606,8 +606,6 @@ def get_temp(mags, catalog=None, T_colname='Teff(K)', colors_colname=['STC_R', '
     """
     Get the temperature of a star given its magnitudes in different colour bands and a color-temperature fit obtained from a catalog.
 
-    .. note:: Currently, the errors are equal for each point, and given by the standard deviation of all the points from the fit.
-
     Parameters
     ----------
     mags, array_like
@@ -659,7 +657,8 @@ def get_temp(mags, catalog=None, T_colname='Teff(K)', colors_colname=['STC_R', '
 
     Raises
     ------
-    AssertionError:
+    AssertionError
+        If the lengths of ``mags`` and ``colors_colname`` aren't the same.
 
     Warns
     -----
@@ -675,7 +674,7 @@ def get_temp(mags, catalog=None, T_colname='Teff(K)', colors_colname=['STC_R', '
     if(print_log and (fig is None or ax is None)):
         fig, ax = plt.subplots()
 
-    temps, fit_BminusR, fit_GminusR, fit_BminusG = get_color_temperature_fits(return_fit=True, unpack=True, precision=precision, catalog=catalog, T_colname=T_colname, colors_colname=colors_colname, print_log=print_log, data_colors=data_colors, fit_colors = fit_colors, fit_ls=fit_ls, fit_alpha=fit_alpha, fill_alpha=fill_alpha, fig=fig, ax=ax) # Get fit-data.
+    temps, fit_BminusR, fit_GminusR, fit_BminusG = get_color_temperature_fits(return_fit=True, unpack=True, precision=precision, catalog=catalog, T_colname=T_colname, colors_colname=colors_colname, print_log=print_log, colband_label=colband_label, data_colors=data_colors, fit_colors = fit_colors, fit_ls=fit_ls, fit_alpha=fit_alpha, fill_alpha=fill_alpha, fig=fig, ax=ax) # Get fit-data.
 
     # Get colour data from magnitudes.
     col_BminusR = np.array(mags[2] - mags[0])
