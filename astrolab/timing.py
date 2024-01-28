@@ -8,6 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.io import wavfile
 
+
 def load_signal(filename, clip=None, print_log=False, color='royalblue', fig=None, ax=None):
     """
     Load a ``.wav`` file and return both the time-series information and the sample rate.

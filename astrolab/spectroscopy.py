@@ -31,10 +31,10 @@ def find_angle(image_array, threshold=0.1, star=None, search=500, print_log=Fals
         Threshold value (as a fraction of the maximum value in the image) below which all data-points are ignored.
 
     star: [int, int] or None, default: None
-        `x` and `y` pixel coordinates of the star's rough location to refine search for the brightest pixel. # TODO: Incorporate this. If None is provided, the brightest pixel is used.
+        `x` and `y` pixel coordinates of the star's rough location to refine search for the brightest pixel. # TODO: Incorporate this. If ``None`` is provided, the brightest pixel is used.
 
     search: float, default: 500
-        Search "radius" in pixels. The brightest pixel will be found in the range (star_pos[0] +/- search, star_pos[1]+/- search).
+        Search "radius" in pixels. The brightest pixel will be found in the range (star_pos[0] +/- search, star_pos[1]+/- search). # TODO: Incorporate this.
 
     print_log: bool, default: False
         Provides option to print a log to debug your code. In this case, it will plot the data-points above the threshold, and the trendline that is fit through it.

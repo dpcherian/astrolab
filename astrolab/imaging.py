@@ -38,7 +38,7 @@ def load_image(filename, gray_conv = [0.2126, 0.7152, 0.0722], print_log=False, 
         A string containing the colormap title. Should be one of the colormaps used by matplotlib: https://matplotlib.org/stable/users/explain/colors/colormaps.html.
 
     stretch: "log" or None, default: "log"
-        A string describing the type of stretching that can be applied to display image data. By default, a log stretch is applied. # TODO: Add more stretches
+        A string describing the type of stretching that can be applied to display image data. By default, a log stretch is applied. # TODO: Add more stretches.
 
     log_a: float, default: 1000
         The log index for ``stretch='log'``.
@@ -276,7 +276,6 @@ def stack(array_of_images, shifts = None, stack_type='mean', print_log=False):
     """
     shape = np.shape(array_of_images) # Get the shape of the input array.
     
-
     if(len(shape)!= 3):
         warnings.warn("`array_of_images` is expected to be an array of (N, Ly, Lx) elements. Returning NoneType.", UserWarning)
         return None
@@ -345,9 +344,7 @@ def flip(image_array, axis="x"):
     Usage
     -----
     >>> flipped_array = flip(this_data)
-    
     """
-    
     if(axis=="x"):
         return image_array[:,::-1]
     elif(axis=="y"):
@@ -574,10 +571,10 @@ def display3D(image_array, cmap=None, stretch='log', log_a = 1000, xlim = None, 
         A string containing the colormap title. Should be one of the colormaps used by matplotlib: https://matplotlib.org/stable/users/explain/colors/colormaps.html.
 
     stretch: "log" or None, default: "log"
-        A string describing the type of stretching that can be applied to display image data. By default, a log stretch is applied. # TODO: Add more stretches
+        A string describing the type of stretching that can be applied to display image data. By default, a log stretch is applied. # TODO: Add more stretches.
 
     log_a: float, default: 1000
-        The log index for ``stretch='log'``. # TODO: Implement log index stretching
+        The log index for ``stretch='log'``. # TODO: Implement log index stretching.
 
     xlim, ylim: float, default: None 
         Set the ``x`` or ``y`` limits of the plot. First element is the lower limit, and the second is the upper limit.
