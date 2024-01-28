@@ -348,7 +348,7 @@ def plot_ref(wvs = [6562.79, 4861.35, 4340.472, 4101.734], wvnames=[r"$\alpha$",
         ax.text(wvs[w]*1.005, ylims[1] - 0.1*(ylims[1]-ylims[0]), wvnames[w], color=color, rotation=text_rotation)
 
 
-def plot_fraunhofer(wvs = [7589.0, 6865.0, 6555.0, 5895.0, 5273.0, 5185.0, 4876.0, 4321.0], wvnames=["A", "B", "C", r"D$_1$", r"E$_1$", "b$_1$", "F", "G"], color='firebrick',lw=0.5, text_rotation=90, fig=None, ax=None):
+def plot_fraunhofer(wvs=[7594.0, 6867.0, 6563.0, 5895.0, 5270.0, 5184.0, 4861.0, 4308.0, 3968.0], wvnames=["A", "B", "C", r"D$_1$", r"E$_2$", r"b$_1$", "F", "G", "H"], color='firebrick', lw=0.5, text_rotation=90, fig=None, ax=None):
     """
     Plot vertical lines of a reference spectrum. By default, the Balmer lines are plotted in Angstroms.
 
@@ -356,10 +356,10 @@ def plot_fraunhofer(wvs = [7589.0, 6865.0, 6555.0, 5895.0, 5273.0, 5185.0, 4876.
 
     Parameters
     ----------
-    wvs: array_like, default: [7589.0, 6865.0, 6555.0, 5895.0, 5273.0, 5185.0, 4876.0, 4321.0] (Fraunhofer lines).
+    wvs: array_like, default: [7594.0, 6867.0, 6563.0, 5895.0, 5270.0, 5184.0, 4861.0, 4308.0, 3968.0] (Fraunhofer lines).
         A list of wavelengths.
 
-    wvnames: array_like, default: ["A", "B", "C", r"D$_1$", r"E$_1$", "b$_1$", "F", "G"] (Fraunhofer lines)
+    wvnames: array_like, default: ["A", "B", "C", r"D$_1$", r"E$_2$", r"b$_1$", "F", "G", "H"] (Fraunhofer lines)
         A list of wavelength names.
 
     color: str, default: 'darkgoldenrod'
