@@ -2,6 +2,8 @@
 
 """
 This package contains a list of functions that can be used to analyse images of stars to perform stellar photometry on them. These functions are intended to be used in the stellar photometry experiment.
+
+.. note:: The first iteration of this module was written by Hiyaa Atreya, with contributions from Ayush Gurule and Tannuvi Agarwal. All three students are Ashoka undergraduates from the UG25 (2022-2026) batch. The code has since undergone major changes, but much of the underlying ideas are the same.
 """
 
 import numpy as np

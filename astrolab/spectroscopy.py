@@ -2,6 +2,8 @@
 
 """
 This package contains a list of functions specifically designed to analyse images with spectra in them. These functions are intended to be used in the Fraunhofer Lines and Grating Spectroscopy experiments.
+
+.. note:: The idea behind the ``find_angle`` and ``rotate_spectrum`` functions of this module were conceived of by Ayush Gurule, an Ashoka undergraduate from the UG25 (2022-2026) batch. The code has changed significantly since his implementation, but the basic idea is essentially the same.
 """
 
 import numpy as np
