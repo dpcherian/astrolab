@@ -558,7 +558,7 @@ def find_star(image_array, star_pos=None, search=500, print_log=False, fig=None,
     return np.array(star)
 
 
-def display3D(image_array, cmap=None, stretch='log', log_a = 1000, xlim = None, ylim = None, plot_view_angle=[25,90], fig=None, ax=None):
+def display3D(image_array, cmap=None, stretch='log', log_a = 1000, xlim = None, ylim = None, plot_view_angle=[25,90], show_colorbar=True, smooth=False, smooth_n=4, fig=None, ax=None):
     """
     **EXPERIMENTAL:** Display 2D scalar data as a 3D image.
 
@@ -582,6 +582,15 @@ def display3D(image_array, cmap=None, stretch='log', log_a = 1000, xlim = None, 
     plot_view_angle: [float, float], default: [25,90]
         Angle of view of the 3D plot.
 
+    show_colorbar: bool, default: True
+        Boolean option to show a colorbar on the 3D plot.
+
+    smooth: bool, default: False
+        Smooth every pixel by taking the sum of the pixel values of its neighbours.
+
+    smooth_n: int, default: 2
+        Number of neighbours to average over when smoothing.
+
     fig: matplotlib figure object, default: None
         Figure on which to plot the result. By default, a new figure is created.
 
@@ -601,7 +610,24 @@ def display3D(image_array, cmap=None, stretch='log', log_a = 1000, xlim = None, 
     -----
     >>> display3D(image_data, cmap="inferno", stretch='log', log_a=10, xlim=None, ylim=None, fig=None, ax=None)
     """
-    allowed_stretches = ["log"]
+    allowed_stretches = ["log", "linear"]
+
+    if(smooth):                           # If image must be smoothed:
+        Ly, Lx = np.shape(image_array)    # Get image dimensions
+        L = np.min([Lx,Ly])               # Find the smallest dimension
+
+        avg = np.zeros((L-smooth_n+1, L-smooth_n+1), dtype=np.float32)
+
+        for i in range(L-smooth_n+1):     # Loop over image and perform a
+            for j in range(L-smooth_n+1): # moving average
+                new_array_val = 0
+                for p in range(smooth_n):
+                    for q in range(smooth_n):
+                        new_array_val += image_array[i+p,j+q]
+
+                avg[i,j] = new_array_val/(smooth_n**2)
+
+        image_array = avg                 # Reset the image array with avg
 
     if(stretch not in allowed_stretches):
         raise ValueError("The chosen stretch \""+ str(stretch) +"\" is not implemented. The allowed values of stretches are: "+str(allowed_stretches))
@@ -615,12 +641,22 @@ def display3D(image_array, cmap=None, stretch='log', log_a = 1000, xlim = None, 
     
     x, y = np.meshgrid(xcoords, ycoords)                  # Create a 2D mesh-grid
     
-    if(stretch is not None):
-        image_array = np.log(image_array)
+    if(stretch=="log"):
+        ax.set_zscale("log")
+    elif(stretch=="linear"):
+        image_array = image_array
+    else:
+        raise ValueError("The chosen stretch \""+ str(stretch) +"\" is not implemented. The allowed values of stretches are: "+str(allowed_stretches)+".")
 
-    ax.plot_surface(x,y, image_array, cmap=cmap)          # Plot the result
+    surface = ax.plot_surface(x,y, image_array,cmap=cmap) # Plot the result
     ax.view_init(plot_view_angle[0], plot_view_angle[1])  # Set the plot view angle
 
-    ax.set_xlim(xlim)                                     # Set the ``xlim`` of the plot
-    ax.set_ylim(ylim)                                     # Set the ``ylim`` of the plot
+    ax.set_xlim(xlim)                                     # Set the ``xlim``
+    ax.set_ylim(ylim)                                     # Set the ``ylim``
 
+    ax.set_xlabel("X pixel")
+    ax.set_ylabel("Y pixel")
+    ax.set_zlabel("Counts")
+
+    if(show_colorbar):
+        fig.colorbar(surface, shrink=0.75)

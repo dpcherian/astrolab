@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "astrolab"
-version = "2023.0.0"
+version = "2023.0.1"
 dependencies = [
   "numpy",
   "matplotlib",

@@ -68,7 +68,6 @@ def get_star_counts(image_array, star=None, radii=np.arange(20), bkg_counts_pp=0
     -----
     >>> mizar_counts = get_distances(mizar_image, star=[1024,512])
     """
-
     if(star is None): # If no star is given, use the brightest pixel
         star = astrolab.imaging.find_star(image_array=image_array)
 
@@ -387,6 +386,9 @@ def get_star_data(hr=None, name=None, catalog=None, hr_colname='HR', name_colnam
     """
     if(catalog is None): # If no catalog is provided, load the default catalog
         catalog = get_bright_star_catalog()
+
+    if(requested_colnames is None): # If no requested column-names are given,
+        requested_colnames = catalog.columns # return all columns
 
     if(hr is None and name is None): # If neither HR number nor name is provided
         raise ValueError("You must provide either the HR number or the name of the star!")                  # raise an error
@@ -709,10 +711,10 @@ def get_temp(mags, catalog=None, T_colname='Teff(K)', colors_colname=['STC_R', '
         T_eff.append( matching_T )
 
     if(print_log): # If a log is to be printed, also plot lines marking computed temperatures
-        handles, labels = ax.get_legend_handles_labels() # Get the old legend
+        handles, labels = ax.get_legend_handles_labels()  # Get the old legend
 
         for i in range(len(cols)):
-            labels[i] = f"{labels[i]} : {T_eff[i]:.0f}" # Add the temperature to the labels
+            labels[i] = f"{labels[i]} : {T_eff[i]:.0f} K" # Add the temperature to the labels
             ax.axhline(cols[i], color=fit_colors[i], ls='--')
             ax.axvline(T_eff[i], color=fit_colors[i], ls='dashdot')
         ax.legend(labels=labels, handles=handles)
@@ -751,7 +753,6 @@ def get_distances(image_array, origin):
     -----
     >>> dist_array = get_distances(this_image, origin=[512,512])
     """
-
     if(np.array(origin).ndim != 1 or len(origin)!=2): # If origin isn't a 1D array with two elements, raise an error
         raise ValueError("``origin``: expected a 1-dimensional array with two elements, but got \""+str(origin)+"\"")
 
