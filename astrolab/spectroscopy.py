@@ -216,7 +216,7 @@ def crop_spectrum(image_array, origin=None, offset=100, width=1500, height=200, 
     return cropped_array
     
 
-def get_spectrum(image_array, sub_bkg=False, lower_lim=None, upper_lim=None, n_sigma = 3, print_log=False, fig=None, ax=None):
+def get_spectrum(image_array, sub_bkg=False, lower_lim=None, upper_lim=None, n_rows = None, n_sigma = 3, print_log=False, fig=None, ax=None):
     """
     Produce a spectrum from a cropped image, with the option to compute and subtract the background.
 
@@ -233,6 +233,9 @@ def get_spectrum(image_array, sub_bkg=False, lower_lim=None, upper_lim=None, n_s
 
     upper_lim: int or None, default: None
         Upper row limit of spectrum. All pixel rows above this are taken to be background.
+
+    n_rows: int or [int, int] or None, default: None
+        Number of rows to consider for the background. If None is provided, all rows below the lower limit and above the upper limit are considered as background. If a single integer is provided, `n_rows` below and above are considered respectively. If a two-element list is provided, the first element represents the number of rows below the lower limit and the second the number of rows above the upper limit.
 
     n_sigma: float, default: 3.0
         Width of the spectrum beyond which background can be taken.
@@ -251,6 +254,11 @@ def get_spectrum(image_array, sub_bkg=False, lower_lim=None, upper_lim=None, n_s
     spectrum: array_like
         A 1D array with information of the intensity as a function of pixel.
 
+    Raises
+    ------
+    ValueError
+        If ``n_rows`` is anything other than NoneType, a single number, or a 2-element list.
+
     Usage
     -----
     >>> this_spectrum = get_spectrum(cropped_array, n_sigma=4)
@@ -259,43 +267,63 @@ def get_spectrum(image_array, sub_bkg=False, lower_lim=None, upper_lim=None, n_s
     spectrum = np.mean(image_array, axis=0)  # Vertical average of image to produce spectrum
     
     if(sub_bkg):                             # If background is to be subtracted
+        vertical_profile = np.mean(image_array, axis=1) # first compute vertical profile of data
+
         if(lower_lim is None or upper_lim is None):
             # TODO: Implement this better.
-            vertical_profile = np.mean(image_array, axis=1) # first plot vertical profile of data,
-            maxval = np.where(vertical_profile == np.max(vertical_profile)) # find value at which profile is maximum,
-            std = np.std(vertical_profile) # find sigma of this data 
+            maxval = np.where(vertical_profile == np.max(vertical_profile)) # Find value at which the vertical profile is maximum,
+            std = np.std(vertical_profile) # find sigma of this profile 
         
             lower_lim = int(maxval - n_sigma*std) # Find number of lines below (integer)
             upper_lim = int(maxval + n_sigma*std) # Find number of lines above (integer)
+
+        max_rows = [lower_lim, len(image_array)-upper_lim] # Maximum available rows
+
+        if(n_rows is None): # If no rows are provided, use maximum available
+            n_rows = max_rows
+        elif(np.ndim(n_rows) == 0):   # If a single number is provided,
+            n_rows = [int(n_rows), int(n_rows)] # create a 2-element list
+        elif(len(n_rows)!=2):         # If anything other than a 2-element list is provided, raise an error
+            raise ValueError("n_rows must either be an integer or a 2-element list of integers, but instead got "+str(n_rows)+".")
+
+        # If the number of rows is larger than the maximum available rows either above or below, reset them to the maximum available rows.
+        n_rows = [int(n_rows[0]) if n_rows[0] < max_rows[0] else max_rows[0], int(n_rows[1]) if n_rows[1] < max_rows[1] else max_rows[1]]
+
+        if(print_log):
+            fig, axes = plt.subplots(nrows=1, ncols=2, width_ratios=[2,3], figsize=(11, 3))
+
+            # Plot vertical profile, with lines indicating where backgrounds will be computed
+            axes[0].plot(vertical_profile, color='k', label="Vertical profile")
+            axes[0].axvline(lower_lim, color='darkgoldenrod', label="Lower cutoff")
+            axes[0].axvspan(lower_lim-n_rows[0], lower_lim, color='darkgoldenrod', alpha=0.5)
+            axes[0].axvline(upper_lim, color='firebrick', label="Upper cutoff")
+            axes[0].axvspan(upper_lim, upper_lim+n_rows[1], color='firebrick', alpha=0.5)
+            axes[0].legend()
             
-            if(print_log):
-                if(fig is None or ax is None):
-                    fig, ax = plt.subplots()
+            # Plot the image, with horizontal lines indicating the extent of the background, along with a fill.
+            astrolab.imaging.display(image_array, fig=fig, ax=axes[1])
+            axes[1].axhline(lower_lim, color='darkgoldenrod', label="Lower background")
+            axes[1].axhline(lower_lim-n_rows[0], color='darkgoldenrod')
+
+            axes[1].axhspan(lower_lim-n_rows[0], lower_lim, color='darkgoldenrod', alpha=0.25)
+
+            axes[1].axhline(upper_lim, color='firebrick', label="Upper background")
+            axes[1].axhline(upper_lim+n_rows[1], color='firebrick')
+
+            axes[1].axhspan(upper_lim, upper_lim+n_rows[1], color='firebrick', alpha=0.25)
+            axes[1].legend()
         
-                ax.plot(vertical_profile, color='k', label="Vertical profile")
-                ax.axvline(lower_lim, color='firebrick', label="Cutoffs")
-                ax.axvline(upper_lim, color='firebrick')
-                ax.legend()
-                
-        elif(print_log):
-            if(fig is None or ax is None):
-                fig, ax = plt.subplots()
-    
-            astrolab.imaging.display(image_array, fig=fig, ax=ax)
-            ax.axhline(lower_lim, color='firebrick', label="Cutoffs")
-            ax.axhline(upper_lim, color='firebrick')
-            ax.legend()
-        
-        lower_bkg = image_array[:lower_lim]  # Selection of lines for lower background
-        upper_bkg = image_array[upper_lim:]  # Selection of lines for upper background
+        lower_bkg = image_array[lower_lim-n_rows[0]:lower_lim]  # Selection of lines for lower background
+        upper_bkg = image_array[upper_lim:upper_lim+n_rows[1]]  # Selection of lines for upper background
 
         bkg  = (np.mean(lower_bkg, axis=0) + np.mean(upper_bkg, axis=0))/2 # Average background
 
         spectrum = np.mean( image_array[lower_lim:upper_lim], axis=0 ) # Recompute spectrum ignoring background
         
     if(print_log):
-        fig, ax = plt.subplots()
-        ax.plot(spectrum, lw=1, color='firebrick', label='No background subtraction')
+        if(fig is None or ax is None):
+            fig, ax = plt.subplots()
+        ax.plot(spectrum, lw=1, color='k', label='No background subtraction')
         ax.set_xlabel("Pixel")
         ax.set_ylabel("Intensity")
         if(sub_bkg):
