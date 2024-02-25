@@ -11,4 +11,5 @@ Tutorials
    tutorials/image-reduction-tutorial.ipynb
    tutorials/stacking-tutorial.ipynb
    tutorials/fraunhofer-lines-tutorial.ipynb
+   tutorials/stellar-spectroscopy-tutorial.ipynb
    tutorials/stellar-photometry-tutorial.ipynb
