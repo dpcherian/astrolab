@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from scipy.io import wavfile
 
 
-def load_signal(filename, clip=None, print_log=False, color='royalblue', fig=None, ax=None):
+def load_signal(filename, clip=None, print_log=False, color='steelblue', fig=None, ax=None):
     """
     Load a ``.wav`` file and return both the time-series information and the sample rate.
 
@@ -26,7 +26,7 @@ def load_signal(filename, clip=None, print_log=False, color='royalblue', fig=Non
     print_log: bool, default: False
         A boolean variable to decide whether you want to print a log of what you've done. In this case, whether you want to plot the resulting signal or not. By default, the signal is not plotted.
 
-    color: str, default: "royalblue"
+    color: str, default: "steelblue"
         Colour of this plot. Must be one of the matplotlib "named colors": https://matplotlib.org/stable/gallery/color/named_colors.html.
 
     fig: matplotlib figure object, default: None
@@ -59,9 +59,6 @@ def load_signal(filename, clip=None, print_log=False, color='royalblue', fig=Non
     
     if(signal.ndim > 1):                         # If the audio is stereo, multiple channels exist
         signal = np.mean(signal, axis=1)         # Averaged over multiple channels to get a single array.
-    
-    if(print_log and ax is None):
-        fig, ax = plt.subplots()                 # If no axis element is provided, create an empty axis.
         
     T = len(signal)/samplerate                   # Total signal time T
     times = np.linspace(0,T,len(signal))         # Time-steps (in seconds) of the signal
@@ -76,7 +73,12 @@ def load_signal(filename, clip=None, print_log=False, color='royalblue', fig=Non
         signal = signal[mask]
     
     if(print_log):                               # If a log must be printed,
+        if(fig is None or ax is None):           # If no figure or axis element
+            fig, ax = plt.subplots()             # is provided, create an empty axis.
+
         ax.plot(times, signal, color=color)      # plot the signal, with the specified colour
+        ax.set_ylabel("Amplitude")
+        ax.set_xlabel("Time (seconds)")
     
     return samplerate, times, signal             
 
@@ -137,7 +139,7 @@ def chunk_signal(times, signal, size=2048, step=128):
     return t, array
 
 
-def power_spectrum(chunk, samplerate, lowx=1000, highx=10_000, print_log=False, color='tomato', label=None, fig=None, ax=None):
+def power_spectrum(chunk, samplerate, lowx=1000, highx=10_000, print_log=False, color='coral', alpha=1, label=None, fig=None, ax=None):
     """
     Accept an array of signal values, compute its power spectrum, and return the dominant frequency in the range ``[lowx, highx]``. Ideally, this range should be centered around the expected "stationary" frequency, and should be wide enough contain all the variation in the frequency during the object's motion.
 
@@ -158,8 +160,11 @@ def power_spectrum(chunk, samplerate, lowx=1000, highx=10_000, print_log=False, 
     print_log: bool, default: False
         A boolean variable to decide whether you want to print a log of what you've done. In this case, if ``print_log=True``, the resulting power spectrum is plotted. By default, the power spectrum is not plotted.
         
-    color: str, default: "tomato"
+    color: str, default: "coral"
         Set the colour of the plot that is produced if ``print_log=True``.
+
+    alpha: float, default: 1
+        Set the transparency of the plot that is produced if ``print_log=True``.
     
     label: str or None, default: None
         Set the label of the plot that is produced if ``print_log=True``. By default, no label is set. 
@@ -193,9 +198,11 @@ def power_spectrum(chunk, samplerate, lowx=1000, highx=10_000, print_log=False, 
     clipped_powspec = powspec[mask]           # the power spectrum
     
     if(print_log==True):                      # If a log must be printed,
-        if(ax is None):
+        if(fig is None or ax is None):
             fig, ax = plt.subplots()          # create an axis if one isn't already provided
-        ax.plot(clipped_freqs, clipped_powspec, color=color, label= label) # Plot the power spectrum
+        ax.plot(clipped_freqs, clipped_powspec, color=color, label=label, alpha=alpha) # Plot the power spectrum
+        ax.set_ylabel("Power spectrum")
+        ax.set_xlabel("Frequency (Hz)")
     
     max_ps = np.max(clipped_powspec)          # Find the maximum of the power spectrum
     
