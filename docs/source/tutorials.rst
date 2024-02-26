@@ -8,6 +8,7 @@ Tutorials
 .. toctree:: 
    :titlesonly:
    
+   tutorials/acoustic-binary-tutorial.ipynb
    tutorials/image-reduction-tutorial.ipynb
    tutorials/stacking-tutorial.ipynb
    tutorials/fraunhofer-lines-tutorial.ipynb
