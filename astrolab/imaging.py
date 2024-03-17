@@ -743,7 +743,7 @@ def sort_astrophotos(base_dir, object_prefix, symlink=True, ext="fit",  flat_pre
 
         for file in file_list:           # For every file in the filelist
             pre_move_name = file
-            parentdir = "/".join(pre_move_name.split("/")[:-1]) # Extract the parent directory
+            parentdir = ospath.dirname(pre_move_name) # Extract the parent directory
             post_move_name = pre_move_name.replace(parentdir, target_folder) # Replace the parent directory with the target name
 
             new_file_list.append(post_move_name) # Save the new name to the new file list
