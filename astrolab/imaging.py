@@ -672,9 +672,11 @@ def sort_astrophotos(base_dir, object_prefix, symlink=True, ext="fit",  flat_pre
 
     An object is specified using its filename's prefix. The function then creates individual folders for each filter. Within each of these folders,
     separate folders for lights, darks, flats, and biases are created, within which the appropriate files are placed. Users have the option to link
-    the files symbolically within these folders (strongly recommended, as it keeps the original filestructure intact) or actually move them there, which would change the original file structure.
+    the files symbolically within these folders (strongly recommended, as it keeps the original file structure intact) or actually move them there, which would change the original file structure.
 
-    .. warning:: Setting ``symlink=False`` can move files around on your machine in ways that cannot easily be undone. Only use this option if you're sure you know what you're doing.
+    .. important:: Windows users will have to enable **developer mode** on their machines in order to use this function, since it relies on creating symbolic links between files. Developer mode can be activated (at least on Windows 11) by going to ``Settings -> System -> For developers`` and toggling the ``Developer mode`` option.
+
+    .. danger:: Setting ``symlink=False`` can move files around on your machine in ways that cannot easily be undone. Only use this option if you're sure you know what you're doing.
 
     Parameters
     ----------
