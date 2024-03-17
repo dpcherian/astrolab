@@ -664,7 +664,7 @@ def display3D(image_array, cmap=None, stretch='log', log_a = 1000, xlim = None, 
         fig.colorbar(surface, shrink=0.75)
 
 
-def sort_astrophotos(base_dir, object_prefix, symlink=True, ext="fit",  flat_prefix = "flats", filter_suffixes=["L", "R", "G", "B", "Ha", "SII", "OIII"], light_suffix="", dark_suffix="D", flat_suffix="", bias_suffix="Bias", folders=["lights", "darks", "flats", "biases"], print_log=False, log_level=0):
+def sort_astrophotos(base_dir, object_prefix, symlink=True, ext="fit",  flat_prefix="flats", filter_suffixes=["L", "R", "G", "B", "Ha", "SII", "OIII"], light_suffix="", dark_suffix="D", flat_suffix="", bias_suffix="Bias", folders=["lights", "darks", "flats", "biases"], print_log=False, log_level=0):
     """
     Sort astrophotography images into appropriately named folders so that they can be used by `Siril <https://siril.org/>`__ or other software.
 
@@ -728,7 +728,7 @@ def sort_astrophotos(base_dir, object_prefix, symlink=True, ext="fit",  flat_pre
 
     Usage
     -----
-    >>> sort_files("./my_ast1080_folder/tonights_session/", object="DS_M13", flats_prefix="flats", flats_suffix="FR")
+    >>> sort_astrophotos(base_dir="./my_ast1080_folder/session5/", object_prefix="DS_M13", flats_prefix="flats", flats_suffix="FR")
     """
     def create_folder(name, print_log=False):
         ''' Helper function to create a folder using the pathlib module.'''
@@ -764,12 +764,17 @@ def sort_astrophotos(base_dir, object_prefix, symlink=True, ext="fit",  flat_pre
 
         return new_file_list
 
-    base_path = ospath.abspath(base_dir)                                # Get the absolute path of the base folder
+    # Get the absolute path of the base folder
+    base_path = ospath.abspath(base_dir)
 
-    lights_folder, darks_folder, flats_folder, biases_folder = folders          # Load the folder names
+    # Load the folder names
+    lights_folder, darks_folder, flats_folder, biases_folder = folders
 
-    dark_files = get_files(f"{base_path}/{object_prefix}*{dark_suffix}.{ext}") # Load the dark file list
-    bias_files = get_files(f"{base_path}/{object_prefix}*{bias_suffix}.{ext}") # Load the bias file list
+    # Load the dark file list
+    dark_files = get_files(f"{base_path}/{object_prefix}*{dark_suffix}.{ext}")
+
+    # Load the bias file list
+    bias_files = get_files(f"{base_path}/{object_prefix}*{bias_suffix}.{ext}")
 
     # Load the lights file list (one list per filter)
     lights_files = [get_files(f"{base_path}/{object_prefix}*{light_suffix}*{filter}.{ext}")             for filter in filter_suffixes]
