@@ -15,6 +15,8 @@ from PIL import Image
 
 from matplotlib.patches import Rectangle
 import glob as glob
+from os import path as ospath, symlink as ossymlink, unlink as osunlink
+from pathlib import Path
 
 
 def load_image(filename, gray_conv = [0.2126, 0.7152, 0.0722], print_log=False, cmap='Greys_r', stretch='log', log_a=1000):
@@ -32,7 +34,7 @@ def load_image(filename, gray_conv = [0.2126, 0.7152, 0.0722], print_log=False, 
         R,G, and B weights to convert from RGB image to grayscale image. 
 
     print_log: bool, default: False
-        Provides option to print a log to debug your code. In this case, whether you want display the image you have loaded.
+        Provides the option to print a log to debug your code. In this case, whether you want display the image you have loaded.
 
     cmap: str, default: "Greys_r"
         A string containing the colormap title. Should be one of the colormaps used by matplotlib: https://matplotlib.org/stable/users/explain/colors/colormaps.html.
@@ -168,7 +170,7 @@ def get_files(pathname, root_dir=None, print_log=False):
         Path specifying the root directory for searching.  If ``pathname`` is relative, the result will contain paths relative to ``root_dir``.
 
     print_log: bool, default: False
-        Provides option to print a log to debug your code. In this case, it will print out the list of files loaded.
+        Provides the option to print a log to debug your code. In this case, it will print out the list of files loaded.
 
     Returns
     -------
@@ -369,7 +371,7 @@ def crop(image_array, left=None, right=None, top=None, bottom=None, origin=None,
         Point about which to crop the image. By default, no point is provided, and ``left``, ``right``, ``top``, and ``bottom`` correspond to absolute pixel values.
 
     print_log: bool, default: False
-        Provides option to print a log to debug your code. In this case, it will display the cropped array.
+        Provides the option to print a log to debug your code. In this case, it will display the cropped array.
 
     fig: matplotlib figure object, default: None
         Figure on which to plot the result. By default, a new figure is created.
@@ -417,7 +419,7 @@ def shift(image_array, displacement, print_log=False):
         Vector of the (x,y) shift by which to translate the image.
 
     print_log: bool, default: False
-        Provides option to print a log to debug your code. In this case, it will display the shifted array.
+        Provides the option to print a log to debug your code. In this case, it will display the shifted array.
     
     Returns
     -------
@@ -469,7 +471,7 @@ def rotate(image_array, angle, origin=None, expand=False, fill=False, print_log=
         Fill area outside the rotated image. If ``True``, this area is filled with the median value of the image.
 
     print_log: bool, default: False
-        Provides option to print a log to debug your code. In this case, it will display the rotated array.
+        Provides the option to print a log to debug your code. In this case, it will display the rotated array.
     
     Returns
     -------
@@ -511,7 +513,7 @@ def find_star(image_array, star_pos=None, search=500, print_log=False, fig=None,
         Search "radius" in pixels. The brightest pixel will be found in the range (star_pos[0] +/- search, star_pos[1]+/- search).
 
     print_log: bool, default: False
-        Provides option to print a log to debug your code. In this case, it will show the location of the detected star, and the provided search-box.
+        Provides the option to print a log to debug your code. In this case, it will show the location of the detected star, and the provided search-box.
 
     fig: matplotlib figure object, default: None
         Figure on which to plot the result. By default, a new figure is created.
@@ -660,3 +662,159 @@ def display3D(image_array, cmap=None, stretch='log', log_a = 1000, xlim = None, 
 
     if(show_colorbar):
         fig.colorbar(surface, shrink=0.75)
+
+
+def sort_astrophotos(base_dir, object_prefix, symlink=True, ext="fit",  flat_prefix = "flats", filter_suffixes=["L", "R", "G", "B", "Ha", "SII", "OIII"], light_suffix="", dark_suffix="D", flat_suffix="", bias_suffix="Bias", folders=["lights", "darks", "flats", "biases"], print_log=False, log_level=0):
+    """
+    Sort astrophotography images into appropriately named folders so that they can be used by `Siril <https://siril.org/>`__ or other software.
+
+    This function can be used to sort images and calibration frames obtained from an automated astrophotography cameras. The files are sorted, based on their prefixes and suffixes, into appropriately named folders.
+
+    An object is specified using its filename's prefix. The function then creates individual folders for each filter. Within each of these folders,
+    separate folders for lights, darks, flats, and biases are created, within which the appropriate files are placed. Users have the option to link
+    the files symbolically within these folders (strongly recommended, as it keeps the original filestructure intact) or actually move them there, which would change the original file structure.
+
+    .. warning:: Setting ``symlink=False`` can move files around on your machine in ways that cannot easily be undone. Only use this option if you're sure you know what you're doing.
+
+    Parameters
+    ----------
+    base_dir: str
+        A string pointing to the path of the folder within which all the astrophotography images have been placed. This path can be either absolute or relative. Relative paths are converted to absolute paths.
+
+    object_prefix: str
+        Prefix used to filter out files for a single astronomical object. This is expected to be the first few characters of the filenames of the object's images.
+
+    symlink: bool, default: True
+        Option to symbolically link the files rather than actually moving them to the appropriate folders. This is *strongly recommended*. If ``symlink=True``, the external file structure is unchanged, only shortcuts are placed inside the newly created folders. If, on the other hand, ``symlink=False``, a new ``flats`` folder is created in the base directory, and all flats are moved into it, inside appropriately named folders per filter. The darks and biases are moved into new directories within the object's folder. These images are then symbolically linked to the appropriate folders for each filter. The lights are moved out from the external folder into the appropriate internal ``lights`` folder.
+
+    ext: str, default: "fit"
+        A string with the filename extension for the images. By default, it accepts FIT files.
+
+    flat_prefix:, str, default: "flats"
+        A string containing the prefix of the flat files. By default, these files are assumed to be named ``flats...``.
+
+    filter_suffixes: list of str, default: ["L", "R", "G", "B", "Ha", "SII", "OIII"]
+        A list of filter suffixes, assumed to be the end of the filename (before the extension).
+
+    light_suffix: str, default: ""
+        A string containing the suffix of the light files. By default, no suffix is assumed.
+
+    dark_suffix: str, default: "D"
+        A string containing the suffix for the darks. By default, "D" is used.
+
+    flat_suffix: str, default: ""
+        A string containing the suffix of the flat files. This can be used to differentiate between different flat frames taken on the same night, since this function filters out flats by looking for those filenames that follow the ``...{flat_prefix}*{flat_suffix}...`` format. By default, no suffix is assumed.
+
+    bias_suffix: str, default: "Bias"
+        A string containing the suffix of the bias files. By default, "Bias" is used.
+
+    folders: list of str, default: ["lights", "darks", "flats", "biases"]
+        A list of four strings containing the names of the different folders to be created. By default, these four folders are created for each of the filters.
+
+    print_log: bool, default: False
+        Provides the option to print a log to debug your code. In this case, it will print out which folders have been created.
+
+    log_level: int, default: 0
+        Provides the option to print out a more detailed log, indicating which files have been moved or symbolically linked. A higher level indicates a more detailed log.
+
+    Returns
+    -------
+    NoneType
+
+    Warns
+    -----
+    UserWarning
+        If files for any of the calibration frames of a filter are not present, but the lights for that filter *are* present.
+
+    Usage
+    -----
+    >>> sort_files("./my_ast1080_folder/tonights_session/", object="DS_M13", flats_prefix="flats", flats_suffix="FR")
+    """
+    def create_folder(name, print_log=False):
+        ''' Helper function to create a folder using the pathlib module.'''
+        Path(name).mkdir(parents=True, exist_ok=True)      # Create a folder and its parents if they don't exist
+        if(print_log): print(f"Creating folder: {name}")
+
+    def move_list(file_list, target_folder, symlink=False, print_log=False, log_level=0):
+        ''' Helper function to move a list of files to a target folder, and return the new names of the moved files.'''
+        new_file_list = []               # Empty list to hold the new filenames
+
+        if(print_log): print("*"*100)    # Print some *s to make the output look a little neat
+
+        for file in file_list:           # For every file in the filelist
+            pre_move_name = file
+            parentdir = "/".join(pre_move_name.split("/")[:-1]) # Extract the parent directory
+            post_move_name = pre_move_name.replace(parentdir, target_folder) # Replace the parent directory with the target name
+
+            new_file_list.append(post_move_name) # Save the new name to the new file list
+
+            if(symlink): # If a symbolic link is to be created
+                try:
+                    ossymlink(pre_move_name, post_move_name)  # Create the symbolic link
+                except FileExistsError:                        # If a link already exists at the location
+                    osunlink(post_move_name)                  # Unlink the old link and link the new one
+                    warnings.warn(f"Symlink {post_move_name} already exists. Replacing it.", UserWarning) # Raise a warning about this.
+                    ossymlink(pre_move_name, post_move_name)
+                if(print_log and log_level>0): print(f"Created shortcut to {pre_move_name} from {post_move_name}.")
+            else:        # If the files are not to be symlinked, then move them to the appropriate folder
+                Path(pre_move_name).rename(post_move_name)
+                if(print_log and log_level>0): print(f"Moved {pre_move_name} to {post_move_name}.")
+
+        if(print_log and log_level>0): print("*"*100) # Print more stars
+
+        return new_file_list
+
+    base_path = ospath.abspath(base_dir)                                # Get the absolute path of the base folder
+
+    lights_folder, darks_folder, flats_folder, biases_folder = folders          # Load the folder names
+
+    dark_files = get_files(f"{base_path}/{object_prefix}*{dark_suffix}.{ext}") # Load the dark file list
+    bias_files = get_files(f"{base_path}/{object_prefix}*{bias_suffix}.{ext}") # Load the bias file list
+
+    # Load the lights file list (one list per filter)
+    lights_files = [get_files(f"{base_path}/{object_prefix}*{light_suffix}*{filter}.{ext}")             for filter in filter_suffixes]
+
+    # Load the flats file list  (one list per filter)
+    flats_files  = [get_files(f"{base_path}/{flat_prefix}*{flat_suffix}*{filter}.{ext}") for filter in filter_suffixes]
+    # Load the flats calibration files (just in case it's needed later)
+    flats_cal_files  = [get_files(f"{base_path}/{flat_prefix}*{flat_suffix}*{filter}.{ext}") for filter in [dark_suffix, bias_suffix]]
+
+    if(symlink is False): # If symbolic links are not to be created, the folder structure is different:
+        # - A new folder is created in the parent directory within which all the flats reside, in subfolders for each filter.
+        # - The darks and the biases for each object are moved and placed within the object's folder.
+        # - Eventually, symbolic links are created between these files and the files per filter created further down.
+
+        # For simplicity, a list of calibration folders and files is created
+        cal_folders = [f"{object_prefix}/{darks_folder}", f"{object_prefix}/{biases_folder}"] + ([f"{flats_folder}/{filter}" for filter in filter_suffixes ]) + ([f"{flats_folder}/{filter}" for filter in [dark_suffix, bias_suffix] ])
+        cal_files   = [dark_files, bias_files] + ([flats for flats in flats_files]) + ([flats for flats in flats_cal_files])
+
+        for c in range(len(cal_folders)):                         # For each calibration frametype,
+            base_folder = f"{base_path}/{cal_folders[c]}"         # define a new appropriately named folder
+            if(len(cal_files[c])>0):                              # if there are any files of that frame,
+                create_folder(base_folder, print_log=print_log)   # and move the files there, returning the new names
+                cal_files[c] = move_list(cal_files[c], target_folder=base_folder, symlink=symlink, print_log=print_log, log_level=log_level)
+            else:
+                cal_files[c] = get_files(f"{base_folder}/*.{ext}")
+
+        dark_files, bias_files = cal_files[0], cal_files[1]       # Replace the old calibration frame list
+        flats_files = cal_files[2:]                               # with the new (replaced) calibration frame list
+
+    for f in range(len(filter_suffixes)):                         # Loop over every filter
+        filter = filter_suffixes[f]
+
+        # For simplicity again, we define lists containing all the source files and target folders for each filter
+        source_files    = [lights_files[f], dark_files, flats_files[f], bias_files]
+        target_folders  = [lights_folder, darks_folder,flats_folder,  biases_folder]
+
+        # We define a boolean variable to decide whether files should be linked symbolically or not.
+        # By default, lights are linked symbolically. If ``symlink=False`` then lights are moved.
+        # Note that within each filter's folder the darks, biases, and flats are all symlinked always.
+        symlink_files = [symlink, True, True, True]
+
+        for i in range(len(target_folders)):  # Create the lights, darks, flats, and biases folders
+            if(len(source_files[0])>0):       # (Only do this if there are actually any lights to place in the folders)
+                if(len(source_files[i])==0):
+                    warnings.warn(f"No {target_folders[i]} for filter \"{filter}\". Are you sure you've chosen your names correctly?", UserWarning)
+                target = f"{base_path}/{object_prefix}/{filter}/{target_folders[i]}"
+                create_folder(target, print_log=print_log)
+                move_list(file_list=source_files[i], target_folder=target, symlink=symlink_files[i], print_log=print_log, log_level=log_level)
