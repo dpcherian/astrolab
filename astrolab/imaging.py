@@ -12,6 +12,7 @@ from astropy.visualization import simple_norm
 
 import warnings
 from PIL import Image
+import rawpy
 
 from matplotlib.patches import Rectangle
 import glob as glob
@@ -19,11 +20,13 @@ from os import path as ospath, symlink as ossymlink, unlink as osunlink
 from pathlib import Path
 
 
-def load_image(filename, gray_conv = [0.2126, 0.7152, 0.0722], print_log=False, cmap='Greys_r', stretch='log', log_a=1000):
+def load_image(filename, gray_conv = [0.2126, 0.7152, 0.0722], bayer_colors=["R", "G", "B"], return_filtered_raw=True, print_log=False, cmap='Greys_r', stretch='log', log_a=1000):
     """
-    Load an image by filename and produce a 2D array. 
-    
-    Input images can either be fits or jpg images. If jpg images are used, they are converted to grayscale first through a grayscale conversion vector that can be modified.
+    Load an image by filename and produce a 2D array.
+
+    Input images can either be FITS, RAW (NEF), or JPG images. If JPG images are provided, they are converted to grayscale first through a grayscale conversion vector that can be modified. RAW images are read using the ``rawpy`` package, and data for each of the individual colour filters is returned.
+
+    .. note:: The original implementation of reading RAW (NEF) image data was due to Ayush Gurule, an Ashoka undergraduate from the UG25 (2022-2026) batch.
 
     Parameters
     ----------
@@ -31,10 +34,18 @@ def load_image(filename, gray_conv = [0.2126, 0.7152, 0.0722], print_log=False, 
         The image file to read: a filename pointing to the location of the file.
 
     gray_conv: [float, float, float], default: [0.2126, 0.7152, 0.0722] 
-        R,G, and B weights to convert from RGB image to grayscale image. 
+        R, G, and B weights to convert a JPEG or PNG from RGB to grayscale.
+
+    bayer_colors: list of chars, default: ["R", "G", "B"]
+        Colours to return, as defined in the Bayer pattern of a RAW image.
+
+    return_filtered_raw: bool, default: True
+        When extracting pixel-level information for individual colours in a Bayered sensor, the resulting arrow will contain multiple zeros for the rows and columns of pixels of a different colour from the one requested. By default, all these zeros are removed and the array is returned.
+
+        .. note:: Removing these pixels effectively "reduces" the size of the image by half in each dimension.
 
     print_log: bool, default: False
-        Provides the option to print a log to debug your code. In this case, whether you want display the image you have loaded.
+        Provides the option to print a log to debug your code. In this case, whether you want display the image you have loaded. For JPG or RAW images with multiple channels, a monochrome "average" over the channels is plotted.
 
     cmap: str, default: "Greys_r"
         A string containing the colormap title. Should be one of the colormaps used by matplotlib: https://matplotlib.org/stable/users/explain/colors/colormaps.html.
@@ -48,13 +59,16 @@ def load_image(filename, gray_conv = [0.2126, 0.7152, 0.0722], print_log=False, 
     Returns
     -------
     data: array_like
-        A 2D array containing the image data.
+        An array containing the image data. If the input image is a RAW file, then this array will have one 2D array for each element of ``bayer_colors``, which can be unpacked into as many variables. For all other input images, a single 2D array is returned.
 
     Raises
     ------
     ValueError
-        If the filetype is not FIT, FITS, JPG, JPEG, or PNG.
-    
+        If the filetype is not FIT, FITS, JPG, JPEG, PNG, or NEF.
+
+    ValueError
+        If the input image is a RAW (NEF) file, and any element of ``bayer_colors`` is not present in the image's Bayer pattern.
+
     Usage
     -----
     >>> this_data = load_image("some_image.JPG")
@@ -71,16 +85,55 @@ def load_image(filename, gray_conv = [0.2126, 0.7152, 0.0722], print_log=False, 
         data = gray_conv[0]*data_rgb[:,:,0] + \
                gray_conv[1]*data_rgb[:,:,1] + \
                gray_conv[2]*data_rgb[:,:,2]                 # Weight and add the R,G,B channels
+    elif(extension=="NEF"):
+        rawpy_object = rawpy.imread(filename) # Load the RAW image as a RawPy object
+        raw_image = rawpy_object.raw_image    # Extract the image data from the RawPy object
+
+        bayer = np.array(list(rawpy_object.color_desc.decode('ascii'))) # Get the Bayer pattern for this camera
+        bayer_index = np.arange(len(bayer))   # Define the Bayer index for each color
+
+        raw_colors = rawpy_object.raw_colors  # An array in which each element (pixel) is marked by its Bayer index For example: all ``0``s are "Red" and all ``1``s are "Green" (say).
+
+        skip_rows, skip_cols = np.shape(rawpy_object.raw_pattern) # Size of the smallest repeatable Bayer pattern of the image
+
+        if(not np.isin(bayer_colors, bayer).all()): # Throw an error if the requested colours and Bayer pattern aren't the same.
+            raise ValueError(f"`bayer_colors` {bayer_colors} must contain elements from the Bayer pattern of the image ({bayer}).")
+
+        bayer_data = []  # Array to hold the image data for each Bayer colour
+
+        for i in bayer_index:                           # For each Bayer index,
+            mask=np.array((raw_colors==bayer_index[i])) # create a mask,
+            tmp_image = mask * raw_image                # extract data from mask
+            bayer_data.append(tmp_image)                # and store the output in ``bayer_array``.
+
+            # Note: The ``tmp_image`` above will have multiple zeros for the rows and columns of pixels of a different colour from the one requested. If ``return_filtered_raw=True``, only the non-zero pixels are returned.
+
+            if(return_filtered_raw):
+                # Find the row and column index of the requested colour from the Bayer pattern array.
+                row_index, col_index = np.argwhere(rawpy_object.raw_pattern==i)[0]
+                # Take only one pixel from each Bayer pattern by skipping rows and columns.
+                bayer_data[i] = bayer_data[i][row_index::skip_rows,col_index::skip_cols]
+
+        bayer_data = np.array(bayer_data) # Convert to a NumPy array to simplify operations later.
+
+        data = [] # Array to store values finally returned.
+
+        for color in bayer_colors: # For each requested colour
+            c_index = np.nonzero(bayer==color)[0] # Find index in ``bayer_data``
+            # Note: Some Bayer patterns have multiple pixels of the same colour (like Green, for example). If so, multiple indices are returned.
+            data.append(np.mean(bayer_data[c_index], axis=0)) # If multiple elements exist, average over them.
+        data = np.array(data)
     else:
-        raise ValueError("Filetype not supported: "+extension )
+        raise ValueError("Filetype not supported: "+extension)
 
     if(print_log):                                          # Display image, if a log is requested
-        display(data, cmap=cmap, stretch=stretch, log_a=log_a)
+        display_data = np.sum(data, axis=0) if extension == "NEF" else data # For NEF data, divide by the max to get values in (0,1)
+        display(display_data, cmap=cmap, stretch=stretch, log_a=log_a)
 
     return data.astype(np.float32)
 
 
-def display(image_array, cmap='Greys_r', stretch='log', log_a = 1000, norm_array=None, min_percent=0.0, max_percent=100.0, title=None, xlim = None, ylim = None, fig=None, ax=None):
+def display(image_array, cmap='Greys_r', stretch='log', log_a=1000, norm_array=None, min_percent=0.0, max_percent=100.0, title=None, xlim=None, ylim=None, fig=None, ax=None):
     """
     Display 2D scalar data as an image.
 
@@ -189,10 +242,9 @@ def get_files(pathname, root_dir=None, print_log=False):
     return files
 
 
-def stack_files(filelist, stack_type='mean', gray_conv = [0.2126, 0.7152, 0.0722], print_log=False):
+def stack_files(filelist, stack_type='mean', gray_conv=[0.2126, 0.7152, 0.0722], bayer_colors=["R", "G", "B"], return_filtered_raw=True, print_log=False):
     """
-    Stack multiple image files together to produce a single output file. Input files can either
-    be a list of fits or jpg images. If jpg images are used, they are converted to grayscale first using the ``gray_conv`` parameter.
+    Stack multiple image files together to produce a single output file. Input files can either be a list of FITS, NEF, or JPG images. If JPG images are used, they are converted to grayscale first using the ``gray_conv`` parameter. If a list of RAW images is provided, the stacked results for each of the individual colour filters is returned.
 
     Parameters
     ----------
@@ -202,13 +254,19 @@ def stack_files(filelist, stack_type='mean', gray_conv = [0.2126, 0.7152, 0.0722
     stack_type: {"mean", "average", "sum"}, default: "mean"
         A string describing the type of stacking. "average" and "mean" both perform the same action.
 
+    bayer_colors: list of chars, default: ["R", "G", "B"]
+        Colours to return, as defined in the Bayer pattern of a RAW image.
+
+    return_filtered_raw: bool, default: True
+        Return only pixel-values of colours specified in ``bayer_colors`` from a RAW image, ignoring all other pixels.
+
     print_log: bool, default: False
         A boolean variable to decide whether you want to print a log of what you've done. In this case, a list of the files stacked.
 
     Returns
     -------
     stacked: array_like
-        A 2D array containing the sum (or average) of every item in the file-list.
+        An array containing the sum (or average) of every item in the file-list.  If the input images are RAW files, this array will have one 2D array for each element of ``bayer_colors``, which can be unpacked into as many variables. For all other input images, a single 2D array is returned.
 
     Raises
     ------
@@ -219,10 +277,10 @@ def stack_files(filelist, stack_type='mean', gray_conv = [0.2126, 0.7152, 0.0722
     -----
     >>> stacked_image = stack_files(filelist, stack_type='mean')
     """
-    stacked = np.zeros_like(load_image(filelist[0]), dtype=np.float32) # Create an empty array of zeros
+    stacked = np.zeros_like(load_image(filelist[0], return_filtered_raw=return_filtered_raw), dtype=np.float32) # Create an empty array of zeros
     
     for i in range(len(filelist)):                              # Load each file,
-        stacked += load_image(filelist[i], gray_conv=gray_conv, print_log=print_log) # and add it to ``stacked``
+        stacked += load_image(filelist[i], gray_conv=gray_conv, print_log=print_log, bayer_colors=bayer_colors, return_filtered_raw=return_filtered_raw) # and add it to ``stacked``
         if(print_log):
             print("File completed:", filelist[i])
 
@@ -234,7 +292,7 @@ def stack_files(filelist, stack_type='mean', gray_conv = [0.2126, 0.7152, 0.0722
     return stacked
 
 
-def stack(array_of_images, shifts = None, stack_type='mean', print_log=False):
+def stack(array_of_images, shifts=None, stack_type='mean', print_log=False):
     """
     Stack an array of multiple image arrays together to produce a single output array. Each image may be shifted by a pre-specified amount before stacking. Images shifts are taken from the ``shifts`` variable.
     

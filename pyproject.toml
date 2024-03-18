@@ -4,13 +4,14 @@ build-backend = "hatchling.build"
 
 [project]
 name = "astrolab"
-version = "2024.1.0"
+version = "2024.2.0"
 dependencies = [
   "numpy",
   "matplotlib",
   "scipy",
   "astropy",
   "pandas",
+  "rawpy",
 ]
 requires-python = ">=3.10"
 authors = [
